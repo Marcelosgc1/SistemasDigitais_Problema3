@@ -50,20 +50,19 @@ void escreveMatriz(int matriz[][5], int tamanho, int matrizId){
     }
 }
 
+
 int sobel(int m[3][5]){
 
-    //printMatriz(m,3);
-
-    
     int mask0[3][5] = {
         {-1, 0, 1},
-        {-1, 0, 1},
+        {-2, 0, 2},
         {-1, 0, 1}
     };
     
     int mask1[3][5] = {
-	{-1,-1,-1},{0,0,0},{1,1,1}
-
+        {1, 2, 1},
+        {0, 0, 0},
+        {-1, -2, -1}
     };
 
     escreveMatriz(mask0,3,1);
@@ -73,14 +72,108 @@ int sobel(int m[3][5]){
     escreveMatriz(mask1,3,1);
     multiplicacao();
     int y = ler(2,0,0);
-    return x+y;
 
+    int resultado = sqrt(x*x + y*y);
+    return resultado;
 
 }
 
+/*
+
+int sobel_expandido(int m[5][5]){
+
+}
+
+*/
 
 
-int func_teste(unsigned char *dados, int i, int j, int larg_dados, int tamanho){
+int preWitt(int m[3][5]){
+
+    int mask0[3][5] = {
+        {-1, 0, 1},
+        {-1, 0, 1},
+        {-1, 0, 1}
+    };
+    
+    int mask1[3][5] = {
+        {-1,-1,-1},
+        {0,0,0},
+        {1,1,1}
+    };
+
+    escreveMatriz(mask0,3,1);
+    escreveMatriz(m,3,0);
+    multiplicacao();
+    int x = ler(2, 0, 0);
+    escreveMatriz(mask1,3,1);
+    multiplicacao();
+    int y = ler(2,0,0);
+
+    int resultado = sqrt(x*x + y*y);
+    return resultado;
+
+}
+
+int roberts(unsigned char m[2][2]){
+
+    int mask0[2][2] ={
+        {1, 0},
+        {0, -1} 
+    };
+
+    int mask1[2][2] ={
+        {0, 1},
+        {-1, 0} 
+    };
+
+    int sumX = 0, sumY = 0;
+
+     for (int i = 0; i < 2; i++){
+        for (int j = 0; j < 2; j++){
+            sumX = sumX + mask0[i][j] * m[i][j];
+            sumY = sumY + mask1[i][j] * m[i][j]; 
+        }
+    }
+
+    double x = sqrt(sumX*sumX + sumY*sumY);
+    //printf("%f\n", x);
+    return x;
+}
+
+
+int funcTeste2x2(unsigned char *dados, int i, int j, int larg_dados, int tamanho){
+
+    unsigned char matriz_temp[2][2];
+    tamanho--;
+
+    int linha = 0;
+    int coluna = 0;
+
+    for(int w = i; w < (i + 1); w++){
+        for(int z = j; z < (j + 1); z++){
+            matriz_temp[linha][coluna] = dados[w*larg_dados + z];
+            coluna++;
+        }
+        coluna = 0;
+        linha++;
+    }
+
+    return roberts(matriz_temp);
+
+}
+
+/*
+
+int laplaciano(int m[5][5]){
+
+}
+
+*/
+
+
+
+
+int func_teste(unsigned char *dados, int i, int j, int larg_dados, int tamanho, int tipo){
 
     int matriz_temp[3][5];
     tamanho--;
@@ -88,6 +181,7 @@ int func_teste(unsigned char *dados, int i, int j, int larg_dados, int tamanho){
     
     int linha = 0, coluna = 0;
 
+    // Montando 3x3 parcial
     for (int w = i - 1; w < (i + 2); w++){
         for (int z = j - 1; z < (j + 2); z++){
             if ((w < 0 || w > tamanho) && (z < 0 || z > tamanho)) matriz_temp[linha][coluna] = dados[i*larg_dados + j];
@@ -103,29 +197,20 @@ int func_teste(unsigned char *dados, int i, int j, int larg_dados, int tamanho){
         linha++;
     }
 
-    
-    return sobel(matriz_temp);
-
+    if(tipo == 1){
+        return sobel(matriz_temp);
+    } else if(tipo == 3){
+        return preWitt(matriz_temp);
+    }
 
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 int main() {
-    const char *filename = "90a8ad63-00a0-47f8-9b2a-014cdd0df533.jpeg"; // Substitua pelo caminho da sua imagem
-    int width, height, channels;
-    iniciarDafema();
+    const char *filename = "barril.jpeg"; // Substitua pelo caminho da sua imagem
+    int width, height, channels, tipo;
+    iniciarDafema();    
+
     // Carregar a imagem (formato: RGB ou RGBA, dependendo da imagem)
     unsigned char *data = stbi_load(filename, &width, &height, &channels, 1);
 
@@ -137,6 +222,9 @@ int main() {
     }
 
     printf("Imagem carregada: %dx%d, %d canais\n\n", width, height, channels);
+
+    printf("FILTROS:\n Sobel(3x3) [1]\n Sobel Expandido(5x5) [2]\n Prewitt(3x3) [3]\n Roberts(2x2) [4]\n Laplaciano(5x5) [5]\n Digite qual filtro quer usar: ");
+    scanf("%d", &tipo);
 
     // Definir a região a ser impressa (aqui: 10x10 pixels a partir do canto (0,0))
     const int start_x = 0;
@@ -150,7 +238,7 @@ int main() {
             // Calcular a posição no array 1D
             int index = (y * width + x);
             
-            int temp = func_teste(data, y, x, width, print_height);
+            int temp = func_teste(data, y, x, width, print_height, tipo);
             if (temp>255){
                 temp = 255;
             }else if (temp<0){
@@ -167,8 +255,14 @@ int main() {
         //printf("\n");
     }
 
+    char nomeFoto[20];
+    if(tipo == 1){
+        strcpy(nomeFoto, "LenaSobel.png");
+    }else if(tipo == 3){
+        strcpy(nomeFoto, "LenaPreWit.png");
+    }
 
-    stbi_write_png("sharp_output_gray.png", width, height, channels, new_data, width);
+    stbi_write_png(nomeFoto, width, height, channels, new_data, width);
 
     // Liberar memória
     encerrarDafema();
@@ -176,4 +270,6 @@ int main() {
     free(new_data);
     return 0;
 }
+
+
 
