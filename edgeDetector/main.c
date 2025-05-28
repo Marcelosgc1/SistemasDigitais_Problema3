@@ -19,8 +19,6 @@ void printMatriz(unsigned char matriz[][3], int tamanho){
 
 int sharpen(unsigned char m[3][3]){
 
-    //printMatriz(m,3);
-
     int mask0[3][3] = {
         {0, -1, 0},
         {-1, 5, -1},
@@ -78,14 +76,40 @@ int sobel(int m[3][5]){
 
 }
 
-/*
-
 int sobel_expandido(int m[5][5]){
+    // Kernel Sobel 5x5 para eixo X
+    int sobel5x5_X[5][5] = {
+        { -1, -2, 0, 2, 1 },
+        { -4, -8, 0, 8, 4 },
+        { -6, -12, 0, 12, 6 },
+        { -4, -8, 0, 8, 4 },
+        { -1, -2, 0, 2, 1 }
+    };
+
+    // Kernel Sobel 5x5 para eixo Y (transposto de X)
+    int sobel5x5_Y[5][5] = {
+        { -1, -4, -6, -4, -1 },
+        { -2, -8, -12, -8, -2 },
+        {  0,  0,   0,  0,  0 },
+        {  2,  8,  12,  8,  2 },
+        {  1,  4,   6,  4,  1 }
+    };
+
+     int sumX = 0;
+     int sumY = 0;
+
+     for (int i = 0; i < 5; i++){
+        for (int j = 0; j < 5; j++){
+            sumX = sumX + sobel5x5_X[i][j] * m[i][j];
+            sumY = sumY + sobel5x5_Y[i][j] * m[i][j]; 
+        }
+    }
+
+    double x = sqrt(sumX*sumX + sumY*sumY);
+    //printf("%f\n", x);
+    return x;
 
 }
-
-*/
-
 
 int preWitt(int m[3][5]){
 
@@ -128,7 +152,7 @@ int roberts(unsigned char m[2][2]){
 
     int sumX = 0, sumY = 0;
 
-     for (int i = 0; i < 2; i++){
+    for (int i = 0; i < 2; i++){
         for (int j = 0; j < 2; j++){
             sumX = sumX + mask0[i][j] * m[i][j];
             sumY = sumY + mask1[i][j] * m[i][j]; 
@@ -139,6 +163,29 @@ int roberts(unsigned char m[2][2]){
     //printf("%f\n", x);
     return x;
 }
+
+int laplaciano(int m[5][5]){
+
+    int mask0[5][5] = {
+    { 0,  0,  -1,  0,  0 },
+    { 0, -1,  -2, -1,  0 },
+    {-1, -2,  16, -2, -1 },
+    { 0, -1,  -2, -1,  0 },
+    { 0,  0,  -1,  0,  0 }
+    };
+
+    int sumG = 0;
+
+    for (int i = 0; i < 5; i++){
+        for (int j = 0; j < 5; j++){
+            sumG = sumG + mask0[i][j] * m[i][j];
+        }
+    }
+
+    return sumG;
+
+}
+
 
 
 int funcTeste2x2(unsigned char *dados, int i, int j, int larg_dados, int tamanho){
@@ -162,18 +209,7 @@ int funcTeste2x2(unsigned char *dados, int i, int j, int larg_dados, int tamanho
 
 }
 
-/*
-
-int laplaciano(int m[5][5]){
-
-}
-
-*/
-
-
-
-
-int func_teste(unsigned char *dados, int i, int j, int larg_dados, int tamanho, int tipo){
+int funcTeste3x3(unsigned char *dados, int i, int j, int larg_dados, int tamanho, int tipo){
 
     int matriz_temp[3][5];
     tamanho--;
@@ -205,9 +241,92 @@ int func_teste(unsigned char *dados, int i, int j, int larg_dados, int tamanho, 
 
 }
 
+int funcTeste5x5(unsigned char *dados, int i, int j, int larg_dados, int tamanho, int tipo){
+    /*int matriz_temp[5][5];
+    int linha = 0;
+    int coluna = 0;  
+
+    for(int linhaTemp = i - 2; linhaTemp < (i + 4); linhaTemp++){
+        for(int colunaTemp = j - 2; colunaTemp < (j + 4); colunaTemp++){
+            matriz_temp[linha][coluna] = dados[linhaTemp*larg_dados + colunaTemp];
+            coluna++;
+        }
+        coluna = 0;
+        linha++;
+    }
+    
+    if(tipo == 2){
+        return sobel_expandido(matriz_temp);
+    } else if(tipo == 5){
+        return laplaciano(matriz_temp);
+    }
+
+    return 0;*/
+
+    int matriz_temp[5][5];
+    tamanho--; // tamanho - 1 para ajustar índices válidos
+
+    int linha = 0, coluna = 0;
+
+    for (int w = i - 2; w <= i + 2; w++) {
+        for (int z = j - 2; z <= j + 2; z++) {
+
+            int w_corrigido = w;
+            int z_corrigido = z;
+
+            // Correção para bordas (espelhamento simples)
+            if (w < 0) w_corrigido = 0;
+            else if (w > tamanho) w_corrigido = tamanho;
+
+            if (z < 0) z_corrigido = 0;
+            else if (z > tamanho) z_corrigido = tamanho;
+
+            matriz_temp[linha][coluna] = dados[w_corrigido * larg_dados + z_corrigido];
+
+            coluna++;
+        }
+        coluna = 0;
+        linha++;
+    }
+
+    if(tipo == 2){
+        return sobel_expandido(matriz_temp);
+    } else if(tipo == 5){
+        return laplaciano(matriz_temp);
+    }
+
+    return 0; 
+}
+
+
+
+int function_principal(unsigned char *dados, int i, int j, int larg_dados, int tamanho, int tipo){
+    if(tipo == 1 || tipo == 3){
+        return funcTeste3x3(dados, i, j, larg_dados, tamanho, tipo);
+    }else if(tipo == 2 || tipo == 5){
+        return funcTeste5x5(dados, i, j, larg_dados, tamanho, tipo);
+    }else{
+        return funcTeste2x2(dados, i, j, larg_dados, tamanho);
+    }
+}
+
+void preencherMatriz(unsigned char *data, unsigned char *new_data, int larg_dados){
+    for(int i = 0; i < 1; i++){
+        for(int j = 0; j < 1; j++){
+            new_data[i*larg_dados + j] = data[i*larg_dados + j];
+        }
+    }
+
+    for(int i = 317; i < 318; i++){
+        for(int j = 317; j < 318; j++){
+            new_data[i*larg_dados + j] = data[i*larg_dados + j];
+        }
+    }
+
+}
 
 int main() {
-    const char *filename = "barril.jpeg"; // Substitua pelo caminho da sua imagem
+    const char *filename = "lenna.jpeg"; // Substitua pelo caminho da sua imagem
     int width, height, channels, tipo;
     iniciarDafema();    
 
@@ -231,14 +350,14 @@ int main() {
     const int start_y = 0;
     const int print_width = 319;
     const int print_height = 319;
-
+    preencherMatriz(data, new_data, width);
     printf("Valores de pixels da região %dx%d (R, G, B, ...):\n", print_width, print_height);
     for (int y = start_y; y < start_y + print_height; y++) {
         for (int x = start_x; x < start_x + print_width; x++) {
             // Calcular a posição no array 1D
             int index = (y * width + x);
             
-            int temp = func_teste(data, y, x, width, print_height, tipo);
+            int temp = function_principal(data, y, x, width, print_height, tipo);
             if (temp>255){
                 temp = 255;
             }else if (temp<0){
@@ -257,9 +376,15 @@ int main() {
 
     char nomeFoto[20];
     if(tipo == 1){
-        strcpy(nomeFoto, "LenaSobel.png");
+        strcpy(nomeFoto, "LennaSobel.png");
+    }else if(tipo == 2){
+        strcpy(nomeFoto, "LennaSobelExpand.png");
     }else if(tipo == 3){
-        strcpy(nomeFoto, "LenaPreWit.png");
+        strcpy(nomeFoto, "LennaPreWit.png");
+    }else if(tipo == 4){
+        strcpy(nomeFoto, "LennaRoberts.png");
+    }else{
+        strcpy(nomeFoto, "LennaLaplaciano.png");
     }
 
     stbi_write_png(nomeFoto, width, height, channels, new_data, width);
@@ -270,6 +395,5 @@ int main() {
     free(new_data);
     return 0;
 }
-
 
 
