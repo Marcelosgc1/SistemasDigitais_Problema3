@@ -17,30 +17,6 @@ void printMatriz(unsigned char matriz[][3], int tamanho){
     }
 }
 
-int sharpen(unsigned char m[3][3]){
-
-    //printMatriz(m,3);
-
-    int mask0[3][3] = {
-        {0, -1, 0},
-        {-1, 5, -1},
-        {0, -1, 0}
-    };
-    int sumX = 0;
-
-    for (int i = 0; i < 3; i++){
-        for (int j = 0; j < 3; j++){
-            sumX = sumX + mask0[i][j] * m[i][j];
-        }
-    }
-
-    //printf("%f\n", x);
-
-    
-    return sumX;
-
-
-}
 
 void escreveMatriz(int matriz[][5], int tamanho, int matrizId){
     for (int i = 0; i < tamanho; i++){
@@ -50,31 +26,35 @@ void escreveMatriz(int matriz[][5], int tamanho, int matrizId){
     }
 }
 
-int sobel(int m[3][5]){
+int prewitt(int m[3][5]){
 
-    //printMatriz(m,3);
-
-    
     int mask0[3][5] = {
         {-1, 0, 1},
         {-1, 0, 1},
         {-1, 0, 1}
     };
-    
-    int mask1[3][5] = {
-	{-1,-1,-1},{0,0,0},{1,1,1}
 
+    escreveMatriz(mask0,3,1);
+    escreveMatriz(m,3,0);
+    convolucao();
+    int x = ler(2, 0, 2);
+    return x;
+
+}
+
+int sobel(int m[3][5]){
+
+    int mask0[3][5] = {
+        {-1, 0, 1},
+        {-2, 0, 2},
+        {-1, 0, 1}
     };
 
     escreveMatriz(mask0,3,1);
     escreveMatriz(m,3,0);
-    multiplicacao();
-    int x = ler(2, 0, 0);
-    escreveMatriz(mask1,3,1);
-    multiplicacao();
-    int y = ler(2,0,0);
-    return x+y;
-
+    convolucao();
+    int x = ler(2, 0, 2);
+    return x;
 
 }
 
@@ -123,10 +103,10 @@ int func_teste(unsigned char *dados, int i, int j, int larg_dados, int tamanho){
 
 
 int main() {
-    const char *filename = "90a8ad63-00a0-47f8-9b2a-014cdd0df533.jpeg"; // Substitua pelo caminho da sua imagem
+    char *filename = "data/medicine.png"; // Substitua pelo caminho da sua imagem
     int width, height, channels;
     iniciarDafema();
-    // Carregar a imagem (formato: RGB ou RGBA, dependendo da imagem)
+    
     unsigned char *data = stbi_load(filename, &width, &height, &channels, 1);
 
     unsigned char *new_data = malloc(sizeof(unsigned char) * 319 * 319);
@@ -138,37 +118,24 @@ int main() {
 
     printf("Imagem carregada: %dx%d, %d canais\n\n", width, height, channels);
 
-    // Definir a região a ser impressa (aqui: 10x10 pixels a partir do canto (0,0))
-    const int start_x = 0;
-    const int start_y = 0;
-    const int print_width = 319;
-    const int print_height = 319;
-
-    printf("Valores de pixels da região %dx%d (R, G, B, ...):\n", print_width, print_height);
-    for (int y = start_y; y < start_y + print_height; y++) {
-        for (int x = start_x; x < start_x + print_width; x++) {
-            // Calcular a posição no array 1D
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            
             int index = (y * width + x);
             
-            int temp = func_teste(data, y, x, width, print_height);
+            int temp = func_teste(data, y, x, width, height);
             if (temp>255){
                 temp = 255;
-            }else if (temp<0){
-                temp = 0;
             }
             
             new_data[index] = temp;
-            //printf("%d\n", new_data[index]);
-            //printf("Pixel (%3d, %3d): ", x, y);
-            //printf("%3u ", data[index]); // Valores de 0 a 255
-            
-            //printf("\n");
         }
-        //printf("\n");
     }
 
-
-    stbi_write_png("sharp_output_gray.png", width, height, channels, new_data, width);
+    char new_file[100] = "output";
+    char *file = filename + 4;
+    strcat(new_file, file);
+    stbi_write_png(new_file, width, height, 1, data, width);
 
     // Liberar memória
     encerrarDafema();
