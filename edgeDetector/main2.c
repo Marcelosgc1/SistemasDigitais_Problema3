@@ -51,16 +51,16 @@ int sobel(int m[3][5]){
         {-1, -2, -1}
     };
 
-    // escreveMatriz(mask0,3,1);
-    // escreveMatriz(m,3,0);
-    // multiplicacao();
-    // int x = ler(2, 0, 0);
-    // escreveMatriz(mask1,3,1);
-    // multiplicacao();
-    // int y = ler(2,0,0);
+    escreveMatriz(mask0,3,1);
+    escreveMatriz(m,3,0);
+    multiplicacao();
+    int x = ler(2, 0, 0);
+    escreveMatriz(mask1,3,1);
+    multiplicacao();
+    int y = ler(2,0,0);
 
-    // int resultado = sqrt(x*x + y*y);
-    return 0;
+    int resultado = sqrt(x*x + y*y);
+    return resultado;
 
 }
 
@@ -79,16 +79,16 @@ int preWitt(int m[3][5]){
         {1,1,1}
     };
 
-    // escreveMatriz(mask0,3,1);
-    // escreveMatriz(m,3,0);
-    // multiplicacao();
-    // int x = ler(2, 0, 0);
-    // escreveMatriz(mask1,3,1);
-    // multiplicacao();
-    // int y = ler(2,0,0);
+    escreveMatriz(mask0,3,1);
+    escreveMatriz(m,3,0);
+    multiplicacao();
+    int x = ler(2, 0, 0);
+    escreveMatriz(mask1,3,1);
+    multiplicacao();
+    int y = ler(2,0,0);
 
-    // int resultado = sqrt(x*x + y*y);
-    return 0;
+    int resultado = sqrt(x*x + y*y);
+    return resultado;
 
 }
 
