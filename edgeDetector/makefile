@@ -1,6 +1,7 @@
 help:
 	@echo "Comandos:"
 	@echo "run: roda código de teste"
+	@echo "send: envia projeto p/ de1-soc, use send ip=x, sendo x o ip da placa"
 
 
 run:
@@ -9,3 +10,7 @@ run:
 	@rm t.o
 	@./exe
 	@rm exe
+
+send:
+	@scp -r ../edgeDetector user@172.65.213.$(ip):/home/user/TEC499/TP01/G03/
+

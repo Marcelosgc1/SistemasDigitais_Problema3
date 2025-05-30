@@ -17,6 +17,21 @@ void printMatriz(unsigned char matriz[][3], int tamanho){
     }
 }
 
+void escreveMatriz2(int matriz[][5], int tamanho, int matrizId){
+
+    int linha = 0, coluna = 0, n0 = 0, n1 = 0, temp = 0;
+
+    do{
+        n0 = (linha < tamanho && coluna < tamanho) ? matriz[linha][coluna] : 0;
+        n1 = (linha < tamanho && coluna < tamanho) ? matriz[linha + (coluna+1>4)][(coluna+1)%5] : 0;
+        escrever(n0,n1,matrizId,linha,coluna);
+        linha = linha + (coluna+1>3);
+        coluna = (coluna>2) ? coluna%3 : coluna + 2;
+
+    } while (linha < 5 && coluna < 5);
+    
+}
+
 
 void escreveMatriz(int matriz[][5], int tamanho, int matrizId){
     for (int i = 0; i < tamanho; i++){
@@ -36,7 +51,7 @@ int prewitt(int m[3][5]){
 
     escreveMatriz(mask0,3,1);
     escreveMatriz(m,3,0);
-    convolucao();
+    convolucaoParalela();
     int x = ler(2, 0, 2);
     return x;
 
@@ -44,15 +59,8 @@ int prewitt(int m[3][5]){
 
 int sobel(int m[3][5]){
 
-    int mask0[3][5] = {
-        {-1, 0, 1},
-        {-2, 0, 2},
-        {-1, 0, 1}
-    };
-
-    escreveMatriz(mask0,3,1);
-    escreveMatriz(m,3,0);
-    convolucao();
+    escreveMatriz2(m,3,0);
+    convolucaoParalela();
     int x = ler(2, 0, 2);
     return x;
 
@@ -109,7 +117,7 @@ int main() {
     
     unsigned char *data = stbi_load(filename, &width, &height, &channels, 1);
 
-    unsigned char *new_data = malloc(sizeof(unsigned char) * 319 * 319);
+    unsigned char *new_data = malloc(sizeof(unsigned char) * height * width);
 
     if (!data) {
         printf("Erro ao carregar a imagem!\n");
@@ -117,6 +125,14 @@ int main() {
     }
 
     printf("Imagem carregada: %dx%d, %d canais\n\n", width, height, channels);
+
+    int mask0[3][5] = {
+        {-1, 0, 1},
+        {-2, 0, 2},
+        {-1, 0, 1}
+    };
+
+    escreveMatriz(mask0,3,1);
 
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {

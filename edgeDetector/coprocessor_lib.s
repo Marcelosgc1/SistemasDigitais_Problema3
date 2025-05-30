@@ -29,8 +29,8 @@
 .global convolucaoRoberts
 .type convolucaoRoberts, %function
 
-.global oposta
-.type oposta, %function
+.global convolucaoParalela
+.type convolucaoParalela, %function
 
 .global multiEscalar
 .type multiEscalar, %function
@@ -490,7 +490,7 @@ convolucao:
 
         BX LR
 
-convolucaoRoberts:
+convolucaoParalela:
         SUB SP, SP, #8
         STR R0, [SP, #0]
         STR LR, [SP, #4]
@@ -506,7 +506,7 @@ convolucaoRoberts:
 
         BX LR
 
-oposta:
+convolucaoRoberts:
         SUB SP, SP, #8
         STR R0, [SP, #0]
         STR LR, [SP, #4]

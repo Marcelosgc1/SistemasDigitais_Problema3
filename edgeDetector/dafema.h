@@ -162,12 +162,9 @@ signed char lerIndice(unsigned char matrizId, unsigned char linha, unsigned char
 void multiEscalar(char multi);
 
 /* Realiza convolução da matriz A, usando matriz B como kernel 
- * É usada a matriz B transposta como segundo kernel 
  *
  * O resultado é escrito na matriz C (2)
- * Resultado da 1ª convolução:      [0][0]
- * Resultado da 2ª convolução:      [0][1]
- * Resultado da soma de resultados: [0][2]
+ * Na posição [0][0]
  */
 void convolucao();
 
@@ -193,11 +190,15 @@ void subtracao();
  */
 void convolucaoRoberts();
 
-/* Gera matriz A oposta  
- * 
+/* Realiza convolução da matriz A, usando matriz B como kernel 
+ * É usada a matriz B transposta como segundo kernel 
+ *
  * O resultado é escrito na matriz C (2)
+ * Resultado da 1ª convolução:      [0][0]
+ * Resultado da 2ª convolução:      [0][1]
+ * Resultado da soma de resultados: [0][2]
  */
-void oposta();
+void convolucaoParalela();
 
 /* Calcula de determinante da matriz A 2x2  
  * 
