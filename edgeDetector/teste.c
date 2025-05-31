@@ -6,7 +6,7 @@ void escreveMatriz2(int matriz[][5], int tamanho, int matrizId){
 
     do{
         n0 = (linha < tamanho && coluna < tamanho) ? matriz[linha][coluna] : 0;
-        n1 = (linha < tamanho && coluna < tamanho) ? matriz[linha + (coluna+1>4)][(coluna+1)%5] : 0;
+        n1 = ((linha + (coluna+1>4)) < tamanho && ((coluna+1)%5) < tamanho) ? matriz[linha + (coluna+1>4)][(coluna+1)%5] : 0;
         escrever(n0,n1,matrizId,linha,coluna);
         linha = linha + (coluna+1>3);
         coluna = (coluna>2) ? coluna%3 : coluna + 2;
@@ -16,7 +16,17 @@ void escreveMatriz2(int matriz[][5], int tamanho, int matrizId){
 }
 
 int main(){
-    int matrz[5][5];
+    int matrz[5][5] = {
+        {1,1,1,1,1},
+        {1,1,1,1,1},
+        {1,1,1,1,1},
+        {1,1,1,1,1},
+        {1,1,1,1,1}
+    };
+    escreveMatriz2(matrz,1,1);
+    escreveMatriz2(matrz,2,1);
+    escreveMatriz2(matrz,3,1);
+    escreveMatriz2(matrz,4,1);
     escreveMatriz2(matrz,5,1);
 
     return 0;
