@@ -11,11 +11,18 @@
 
 
 void escreverMatriz2(int matriz[][5], int tamanho, int matrizId){
-    for (int i = 0; i < tamanho; i++){
-        for (int j = 0; j < tamanho; j++){
-            escreverIndice(matriz[i][j], matrizId, i, j);
-        }
-    }
+
+    int linha = 0, coluna = 0, n0 = 0, n1 = 0, temp = 0;
+
+    do{
+        n0 = (linha < tamanho && coluna < tamanho) ? matriz[linha][coluna] : 0;
+        n1 = ((linha + (coluna+1>4)) < tamanho && ((coluna+1)%5) < tamanho) ? matriz[linha + (coluna+1>4)][(coluna+1)%5] : 0;
+        escrever(n0,n1,matrizId,linha,coluna);
+        linha = linha + (coluna+1>3);
+        coluna = (coluna>2) ? coluna%3 : coluna + 2;
+
+    } while (linha < 5 && coluna < 5);
+    
 }
 
 
