@@ -23,14 +23,14 @@
 .global subtracao
 .type subtracao, %function
 
-.global multiplicacao
-.type multiplicacao, %function
+.global convolucao
+.type convolucao, %function
 
-.global transposicao
-.type transposicao, %function
+.global convolucaoRoberts
+.type convolucaoRoberts, %function
 
-.global oposta
-.type oposta, %function
+.global convolucaoParalela
+.type convolucaoParalela, %function
 
 .global multiEscalar
 .type multiEscalar, %function
@@ -474,7 +474,7 @@ subtracao:
 
         BX LR
 
-multiplicacao:
+convolucao:
         SUB SP, SP, #8
         STR R0, [SP, #0]
         STR LR, [SP, #4]
@@ -490,7 +490,7 @@ multiplicacao:
 
         BX LR
 
-transposicao:
+convolucaoParalela:
         SUB SP, SP, #8
         STR R0, [SP, #0]
         STR LR, [SP, #4]
@@ -506,7 +506,7 @@ transposicao:
 
         BX LR
 
-oposta:
+convolucaoRoberts:
         SUB SP, SP, #8
         STR R0, [SP, #0]
         STR LR, [SP, #4]
