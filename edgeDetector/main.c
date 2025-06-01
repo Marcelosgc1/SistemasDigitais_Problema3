@@ -10,7 +10,7 @@
 #include "dafema.h"
 
 
-void escreverMatriz2(int matriz[][5], int tamanho, int matrizId){
+void escreverMatriz(int matriz[][5], int tamanho, int matrizId){
 
     int linha = 0, coluna = 0, n0 = 0, n1 = 0, temp = 0;
 
@@ -28,44 +28,38 @@ void escreverMatriz2(int matriz[][5], int tamanho, int matrizId){
 
 // Roberts 2x2
 void roberts(){
-
     int mask0[2][5] ={
         {1, 0},
         {0, -1} 
     };
-    printf("eba");
-    escreverMatriz2(mask0, 2, 1);
+
+    escreverMatriz(mask0, 2, 1);
 }
 
 // Sobel 3x3
-int sobel(){
-
-
+void sobel(){
     int mask0[3][5] = {
         {-1, 0, 1},
         {-2, 0, 2},
         {-1, 0, 1}
     };
-    
-    
-    escreverMatriz2(mask0, 3, 1);
+        
+    escreverMatriz(mask0, 3, 1);
 }
 
 // PreWitt 3x3 
-int preWitt(){
-
+void prewitt(){
     int mask0[3][5] = {
         {-1, 0, 1},
         {-1, 0, 1},
         {-1, 0, 1}
     };
 
-    escreverMatriz2(mask0, 3, 1);
+    escreverMatriz(mask0, 3, 1);
 }
 
 // Sobel Expandido 5x5
-int sobel_expandido() {
-
+void sobel_expandido() {
     int mask0[5][5] = {
         { 2, 2, 4, 2, 2 },
         { 1, 1, 2, 1, 1 },
@@ -74,20 +68,11 @@ int sobel_expandido() {
         { -2, -2, -4, -2, -2 }
     };
 
-    int mask1[5][5] = {
-        { 2, 1, 0, -1, -2 },
-        { 2, 1, 0, -1, -2 },
-        { 4, 2, 0, -2, -4 },
-        { 2, 1, 0, -1, -2 },
-        { 2, 1, 0, -1, -2 }
-    };
-
-    escreverMatriz2(mask0, 5, 1);
-  
+    escreverMatriz(mask0, 5, 1);
 }
 
 // Laplaciano 5x5
-int laplaciano(){
+void laplaciano(){
     
     int mask0[5][5] = {
     { 0,  0,  -1,  0,  0 },
@@ -97,11 +82,11 @@ int laplaciano(){
     { 0,  0,  -1,  0,  0 }
     };
 
-    escreverMatriz2(mask0, 5, 1);
+    escreverMatriz(mask0, 5, 1);
     
 }
 
-// Geração da matriz 5x5 com tratamento de bordas (espelhamento)
+
 int funcTeste5x5(unsigned char *dados, int i, int j, int largura, int altura, int operacao) {
     /* 
     int matriz_temp[5][5];
@@ -124,8 +109,7 @@ int funcTeste5x5(unsigned char *dados, int i, int j, int largura, int altura, in
     */
 
     int matriz_temp[5][5];
-    int linha = 0;
-    int coluna = 0;  
+    int linha = 0, coluna = 0, resultado;
 
     // printf("\n %d %d", i, j);
     for(int linhaTemp = i - 2; linhaTemp < (i + 3); linhaTemp++){
@@ -136,14 +120,16 @@ int funcTeste5x5(unsigned char *dados, int i, int j, int largura, int altura, in
         coluna = 0;
         linha++;
     }
-    escreverMatriz2(matriz_temp, 5, 0);
-    int x = lerIndice(2,0,0);
+    escreverMatriz(matriz_temp, 5, 0);
+    
     if(operacao == 4){
         convolucaoParalela();
-        return sqrt(pow(x>>8,2) + pow(x&255, 2));
+        resultado = ler(2,0,0);
+        return sqrt(pow(resultado>>8, 2) + pow(resultado&255, 2));
     }else{
         convolucao();
-        return x&255;
+        resultado = lerIndice(2,0,0);
+        return resultado;
     }
     return 0;
 }
@@ -151,10 +137,7 @@ int funcTeste5x5(unsigned char *dados, int i, int j, int largura, int altura, in
 int funcTeste3x3(unsigned char *dados, int i, int j, int larg_dados, int tamanho){
 
     int matriz_temp[3][5];
-    tamanho--;
-    
-    
-    int linha = 0, coluna = 0;
+    int linha = 0, coluna = 0, resultado;
 
     // Montando 3x3 parcial
     for (int w = i - 1; w < (i + 2); w++){
@@ -171,25 +154,17 @@ int funcTeste3x3(unsigned char *dados, int i, int j, int larg_dados, int tamanho
         linha++;
     }
 
-    /*
-    if(operacao == 2){
-        return sobel(matriz_temp);
-    } else if(operacao == 3){
-        return preWitt(matriz_temp);
-    }
-    */
-    escreverMatriz2(matriz_temp, 3, 0);
+    escreverMatriz(matriz_temp, 3, 0);
     convolucaoParalela();
-    int x = ler(2,0,0);
-    return sqrt(pow(x>>8,2) + pow(x&255, 2));
-    //return ler(2,0,0);
+    int resultado = ler(2,0,0);
+    return sqrt(pow(resultado>>8,2) + pow(resultado&255, 2));
 }
 
 int funcTeste2x2(unsigned char *dados, int i, int j, int larg_dados, int tamanho){
 
     int matriz_temp[2][5];    
     
-    int linha = 0, coluna = 0;
+    int linha = 0, coluna = 0, resultado;
 
     for (int w = i; w < (i + 2); w++){
         for (int z = j; z < (j + 2); z++){
@@ -200,13 +175,13 @@ int funcTeste2x2(unsigned char *dados, int i, int j, int larg_dados, int tamanho
         linha++;
     }
 
-    escreverMatriz2(matriz_temp, 2, 0);
+    escreverMatriz(matriz_temp, 2, 0);
     convolucaoRoberts();
-    int x = ler(2,0,0);
-    return sqrt(pow(x>>8,2) + pow(x&255, 2));
+    int resultado = ler(2,0,0);
+    return sqrt(pow(resultado>>8, 2) + pow(resultado&255, 2));
 }
 
-int funcprincipal(unsigned char *dados, int i, int j, int larg_dados, int tamanho, int operacao){
+int calcularGeratriz(unsigned char *dados, int i, int j, int larg_dados, int tamanho, int operacao){
     if(operacao == 2 || operacao == 3){
         funcTeste3x3(dados, i, j, larg_dados, tamanho);
     }else if(operacao == 4 || operacao == 5){
@@ -220,17 +195,15 @@ int funcprincipal(unsigned char *dados, int i, int j, int larg_dados, int tamanh
 int main() {
     const char *input_filename = "lenna.jpeg";
     char *output_filename = "foto.png";
-    iniciarDafema();
-    int width, height, channels;
+    int width, height, channels, operacao;
+    double *temp_data = malloc(width * height * sizeof(double));
+    unsigned char *output_data = malloc(width * height * sizeof(unsigned char));
     unsigned char *data = stbi_load(input_filename, &width, &height, &channels, 1);
+
     if (!data) {
         printf("Erro ao carregar imagem '%s'\n", input_filename);
         return 1;
     }
-
-    double *temp_data = malloc(width * height * sizeof(double));
-    unsigned char *output_data = malloc(width * height * sizeof(unsigned char));
-
     if (!temp_data || !output_data) {
         printf("Erro ao alocar memória.\n");
         stbi_image_free(data);
@@ -239,65 +212,68 @@ int main() {
         return 1;
     }
 
-    // Aplicar Sobel 5x5 (armazenando valores temporários)
-    double max_value = 0.0;
+
+    iniciarDafema();
+
+    printf("\nDIGITE O FILTRO DESEJADO ");
+    printf("\nFILTROS:\n[1] Roberts(2x2) \n[2] Sobel(3x3) \n[3] Prewitt(3x3) \n[4] Sobel Expandido(5x5) \n[5] Laplaciano(5x5): \n[6] Sair do Programa: ");
+    scanf("%d", &operacao);
+
+    while (operacao > 0 && operacao < 6){
+        switch(operacao){
+            case 1:
+                roberts();
+                output_filename = "roberts.png";
+                break;
+            case 2:
+                sobel();
+                output_filename = "sobel.png";
+                break;
+            case 3:
+                prewitt();
+                output_filename = "prewit.png";
+                break;
+            case 4:
+                sobel_expandido();
+                output_filename = "sobel_expandido.png";
+                break;
+            case 5:
+                laplaciano();
+                output_filename = "laplaciano.png";
+                break;
+            default:
+                break;
+        }
+
+        for (int y = 0; y < height - 1; y++) {
+            for (int x = 0; x < width - 1; x++) {
+                int temporario = calcularGeratriz(data, y, x, width, height, operacao);
+                if (temporario>255){
+                    temporario=255;
+                }else if (temporario<0){
+                    temporario=0;
+                }
+                output_data[y * width + x] = temporario;
+                
+            }
+        }
     
-    int operacao = 0;
-    while (operacao < 6){
+
+        
+        stbi_write_png(output_filename, width, height, 1, output_data, width);
+        printf("Imagem salva como '%s'\n", output_filename);
+
         printf("\nDIGITE O FILTRO DESEJADO ");
         printf("\nFILTROS:\n[1] Roberts(2x2) \n[2] Sobel(3x3) \n[3] Prewitt(3x3) \n[4] Sobel Expandido(5x5) \n[5] Laplaciano(5x5): \n[6] Sair do Programa: ");
         scanf("%d", &operacao);
-        printf("teste");
-        if(operacao >= 1 || operacao <6){
-            switch(operacao){
-                case 1:
-                    roberts();
-                    output_filename = "roberts.png";
-                    break;
-                case 2:
-                    sobel();
-                    output_filename = "sobel.png";
-                    break;
-                case 3:
-                    preWitt();
-                    output_filename = "prewit.png";
-                    break;
-                case 4:
-                    sobel_expandido();
-                    output_filename = "sobel_expandido.png";
-                    break;
-                case 5:
-                    laplaciano();
-                    output_filename = "laplaciano.png";
-                    break;
-                default:
-                    break;
-            }
+    }
 
-            for (int y = 0; y < height - 1; y++) {
-                for (int x = 0; x < width - 1; x++) {
-                    int temporario = funcprincipal(data, y, x, width, height, operacao);
-                    if (temporario>255){
-                        temporario=255;
-                    }else if (temporario<0){
-                        temporario=0;
-                    }
-                    output_data[y * width + x] = temporario;
-                    
-                }
-            }
-        }
-        if(operacao < 6){
-             stbi_write_png(output_filename, width, height, 1, output_data, width);
-             printf("Imagem salva como '%s'\n", output_filename);
-        }else{
-            break;
-        }
     // Liberar memória
+    encerrarDafema();
     stbi_image_free(data);
     free(temp_data);
     free(output_data);
 
     return 0;
 }
-}
+
