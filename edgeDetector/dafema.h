@@ -1,5 +1,6 @@
 #ifndef DAFEMA_H
 #define DAFEMA_H
+#include <stdlib.h>
 
 /*
  * Stuct que indica um indice de uma matriz
@@ -160,11 +161,12 @@ signed char lerIndice(unsigned char matrizId, unsigned char linha, unsigned char
  */
 void multiEscalar(char multi);
 
-/* Multiplica matrizes A e B 
- * 
+/* Realiza convolução da matriz A, usando matriz B como kernel 
+ *
  * O resultado é escrito na matriz C (2)
+ * Na posição [0][0]
  */
-void multiplicacao();
+void convolucao();
 
 /* Soma matrizes A e B  
  * 
@@ -178,17 +180,25 @@ void soma();
  */
 void subtracao();
 
-/* Gera matriz A transposta 
- * 
+/* Realiza convolução da matriz A, usando matriz B como kernel 
+ * É usada a matriz B rotacionada 45 graus (2x2) como segundo kernel 
+ *
  * O resultado é escrito na matriz C (2)
+ * Resultado da 1ª convolução:      [0][0]
+ * Resultado da 2ª convolução:      [0][1]
+ * Resultado da soma de resultados: [0][2]
  */
-void transposicao();
+void convolucaoRoberts();
 
-/* Gera matriz A oposta  
- * 
+/* Realiza convolução da matriz A, usando matriz B como kernel 
+ * É usada a matriz B transposta como segundo kernel 
+ *
  * O resultado é escrito na matriz C (2)
+ * Resultado da 1ª convolução:      [0][0]
+ * Resultado da 2ª convolução:      [0][1]
+ * Resultado da soma de resultados: [0][2]
  */
-void oposta();
+void convolucaoParalela();
 
 /* Calcula de determinante da matriz A 2x2  
  * 
