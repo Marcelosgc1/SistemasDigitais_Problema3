@@ -51,6 +51,20 @@ int sobel(int m[3][5]){
         {-1, -2, -1}
     };
 
+    int sumX = 0, sumY = 0;
+
+    for (int i = 0; i < 3; i++){
+        for (int j = 0; j < 3; j++){
+            sumX = sumX + mask0[i][j] * m[i][j];
+            sumY = sumY + mask1[i][j] * m[i][j]; 
+        }
+    }
+
+    int resultado = sqrt(sumX*sumX + sumY*sumY);
+
+    return resultado;
+
+/*
     escreveMatriz(mask0,3,1);
     escreveMatriz(m,3,0);
     multiplicacao();
@@ -58,9 +72,9 @@ int sobel(int m[3][5]){
     escreveMatriz(mask1,3,1);
     multiplicacao();
     int y = ler(2,0,0);
+*/
 
-    int resultado = sqrt(x*x + y*y);
-    return resultado;
+    
 
 }
 
@@ -79,6 +93,19 @@ int preWitt(int m[3][5]){
         {1,1,1}
     };
 
+    int sumX = 0, sumY = 0;
+    
+    for (int i = 0; i < 3; i++){
+        for (int j = 0; j < 3; j++){
+            sumX = sumX + mask0[i][j] * m[i][j];
+            sumY = sumY + mask1[i][j] * m[i][j]; 
+        }
+    }
+
+    int resultado = sqrt(sumX*sumX + sumY*sumY);
+
+    return resultado;
+/*
     escreveMatriz(mask0,3,1);
     escreveMatriz(m,3,0);
     multiplicacao();
@@ -88,7 +115,8 @@ int preWitt(int m[3][5]){
     int y = ler(2,0,0);
 
     int resultado = sqrt(x*x + y*y);
-    return resultado;
+*/
+    
 
 }
 
@@ -248,10 +276,18 @@ int funcTeste2x2(unsigned char *dados, int i, int j, int larg_dados, int tamanho
     return roberts(matriz_temp);
 }
 
-
+int calcularGeratriz(unsigned char *dados, int i, int j, int larg_dados, int tamanho, int operacao){
+    if(operacao == 2 || operacao == 3){
+        funcTeste3x3(dados, i, j, larg_dados, tamanho, operacao);
+    }else if(operacao == 4 || operacao == 5){
+        funcTeste5x5(dados, i, j, larg_dados, tamanho, operacao);
+    }else{
+        funcTeste2x2(dados, i, j, larg_dados, tamanho);
+    }
+}
 
 int main() {
-    const char *input_filename = "ma.png";
+    const char *input_filename = "lenna.jpeg";
     char *output_filename = "foto.png";
 
     int width, height, channels;
@@ -279,85 +315,47 @@ int main() {
     printf("\nDIGITE O FILTRO DESEJADO: ");
     printf("\nFILTROS:\n[1] Roberts(2x2) \n[2] Sobel(3x3) \n[3] Prewitt(3x3) \n[4] Sobel Expandido(5x5) \n[5] Laplaciano(5x5): ");
     scanf("%d", &operacao);
-    if(operacao == 1){
+    while (operacao > 0 && operacao < 6){
+        switch(operacao){
+            case 1:
+                output_filename = "outputC/roberts.png";
+                break;
+            case 2:
+                output_filename = "outputC/sobel.png";
+                break;
+            case 3:
+                output_filename = "outputC/prewit.png";
+                break;
+            case 4:
+                output_filename = "outputC/sobel_expandido.png";
+                break;
+            case 5:
+                output_filename = "outputC/laplaciano.png";
+                break;
+            default:
+                break;
+        }
+
         for (int y = 0; y < height - 1; y++) {
             for (int x = 0; x < width - 1; x++) {
-                //printf("\n%d %d", y, x);
-                
-                int temporario = funcTeste2x2(data, y, x, width, height);
+                int temporario = calcularGeratriz(data, y, x, width, height, operacao);
                 if (temporario>255){
                     temporario=255;
                 }else if (temporario<0){
                     temporario=0;
                 }
                 output_data[y * width + x] = temporario;
-                output_filename = "roberts.png";
-                // double val = sobel5x5(data, y, x, width, height);
-                // temp_data[y * width + x] = val;
-                // if (val > max_value) max_value = val;
+                
             }
         }
-    } else if (operacao == 2 || operacao == 3){
-        for (int y = 0; y < height - 1; y++) {
-            for (int x = 0; x < width - 1; x++) {
-            //printf("\n%d %d", y, x);
-            
-            int temporario = funcTeste3x3(data, y, x, width, height, operacao);
-            if (temporario>255){
-                temporario=255;
-            }else if (temporario<0){
-                temporario=0;
-            }
-            output_data[y * width + x] = temporario;
+        
+        stbi_write_png(output_filename, width, height, 1, output_data, width);
+        printf("Imagem salva como '%s'\n", output_filename);
 
-            if(operacao == 2){
-                output_filename = "sobel.png";
-            } else {
-                output_filename = "prewitt.png";
-            }
-            
-            // double val = sobel5x5(data, y, x, width, height);
-            // temp_data[y * width + x] = val;
-            // if (val > max_value) max_value = val;
-            }
-        }
-    } else if (operacao == 4 || operacao == 5){
-        for (int y = 2; y < height - 2; y++) {
-            for (int x = 2; x < width - 2; x++) {
-            //printf("\n%d %d", y, x);
-            
-            int temporario = funcTeste5x5(data, y, x, width, height, operacao);
-            if (temporario>255){
-                temporario=255;
-            }else if (temporario<0){
-                temporario=0;
-            }
-            output_data[y * width + x] = temporario;
-
-            if(operacao == 4){
-                output_filename = "sobel_expandido.png";
-            } else {
-                output_filename = "laplaciano.png";
-            }
-            
-            // double val = sobel5x5(data, y, x, width, height);
-            // temp_data[y * width + x] = val;
-            // if (val > max_value) max_value = val;
-            }
-        }
-    } else {
-        printf("\nOpção Inválida");
+        printf("\nDIGITE O FILTRO DESEJADO ");
+        printf("\nFILTROS:\n[1] Roberts(2x2) \n[2] Sobel(3x3) \n[3] Prewitt(3x3) \n[4] Sobel Expandido(5x5) \n[5] Laplaciano(5x5): \n[6] Sair do Programa: ");
+        scanf("%d", &operacao);
     }
-   
-
-    // Normalizar para 0-255
-    // for (int i = 0; i < width * height; i++) {
-    //     output_data[i] = (unsigned char)(temp_data[i] / max_value * 255.0);
-    // }
-
-    // Salvar imagem de saída
-    stbi_write_png(output_filename, width, height, 1, output_data, width);
-    printf("Imagem salva como '%s'\n", output_filename);
 
     // Liberar memória
     stbi_image_free(data);
