@@ -11,8 +11,6 @@ run:
 	@rm DFM
 
 runTest:
-	@as lib/coprocessor_lib.s -o t2.o
-	@gcc referencia.c t2.o -z noexecstack -o test -std=c99 -lm
-	@rm t2.o
+	@gcc referencia.c -o test -std=c99 -lm
 	@./test
 	@rm test
