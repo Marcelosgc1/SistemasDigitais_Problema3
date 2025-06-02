@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+#include <time.h>
 #include "stb_image.h"
 #include "stb_image_write.h"
 #include "dafema.h"
@@ -208,6 +209,8 @@ int main() {
             printf("\nVocê prefere realizar a soma pitagórica [0], ou a soma do módulo das geratrizes [1]?");
             scanf("%d", &somaFpga);
         }
+
+        clock_t comecoProcedimento = clock();
         
         switch(operacao){
             case 1:
@@ -246,6 +249,10 @@ int main() {
                 
             }
         }
+
+        clock_t fimProcedimento = clock();
+        double tempo = (fimProcedimento - comecoProcedimento) / CLOCKS_PER_SEC;
+        printf("\nEste procedimento durou: %.6f segundos\n", tempo);
     
 
         
