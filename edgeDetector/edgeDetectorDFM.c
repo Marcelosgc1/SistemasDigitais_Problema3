@@ -6,9 +6,9 @@
 #include <math.h>
 #include <string.h>
 #include <time.h>
-#include "stb_image.h"
-#include "stb_image_write.h"
-#include "dafema.h"
+#include "lib/stb_image.h"
+#include "lib/stb_image_write.h"
+#include "lib/dafema.h"
 
 
 void escreverMatriz(int matriz[][5], int tamanho, int matrizId){
@@ -178,7 +178,7 @@ int calcularGeratriz(unsigned char *dados, int i, int j, int larg_dados, int tam
 
 
 int main() {
-    const char *inputImagem = "Lena.jpeg";
+    const char *inputImagem = "data/Lena.jpeg";
     char *outputImagem = "foto.png";
     int larguraImg, alturaImg, channels, operacao, somaFpga = 0;
     unsigned char *dadosImagem = stbi_load(inputImagem, &larguraImg, &alturaImg, &channels, 1);
@@ -215,23 +215,23 @@ int main() {
         switch(operacao){
             case 1:
                 roberts();
-                outputImagem = "roberts.png";
+                outputImagem = "outputDFM/roberts.png";
                 break;
             case 2:
                 sobel();
-                outputImagem = "sobel.png";
+                outputImagem = "outputDFM/sobel.png";
                 break;
             case 3:
                 prewitt();
-                outputImagem = "prewit.png";
+                outputImagem = "outputDFM/prewit.png";
                 break;
             case 4:
                 sobel_expandido();
-                outputImagem = "sobel_expandido.png";
+                outputImagem = "outputDFM/sobel_expandido.png";
                 break;
             case 5:
                 laplaciano();
-                outputImagem = "laplaciano.png";
+                outputImagem = "outputDFM/laplaciano.png";
                 break;
             default:
                 break;

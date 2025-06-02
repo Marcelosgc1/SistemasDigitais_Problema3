@@ -5,8 +5,8 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
-#include "stb_image.h"
-#include "stb_image_write.h"
+#include "lib/stb_image.h"
+#include "lib/stb_image_write.h"
 
 // Roberts 2x2
 int roberts(int m[2][5]){
@@ -287,7 +287,7 @@ int calcularGeratriz(unsigned char *dados, int i, int j, int larg_dados, int tam
 }
 
 int main() {
-    const char *input_filename = "lenna.jpeg";
+    const char *input_filename = "data/Lena.jpeg";
     char *output_filename = "foto.png";
 
     int width, height, channels;
