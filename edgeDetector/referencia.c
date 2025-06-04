@@ -5,8 +5,8 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
-#include "stb_image.h"
-#include "stb_image_write.h"
+#include "lib/stb_image.h"
+#include "lib/stb_image_write.h"
 
 //Diferença logarítmica
 static int comparar_imagens_diferenca_log(const char *imagem1_path, const char *imagem2_path, const char *diferenca_path) {
@@ -377,7 +377,7 @@ int calcularGeratriz(unsigned char *dados, int i, int j, int larg_dados, int tam
 
 
 int main() {
-    const char *input_filename = "lenna.jpeg";
+    const char *input_filename = "data/Lena.jpeg";
     char *output_filename = "foto.png"; 
 
     int width, height, channels, comparar;
