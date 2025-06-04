@@ -8,7 +8,9 @@
 #include "stb_image.h"
 #include "stb_image_write.h"
 
-static int comparar_imagens_diferenca(const char *imagem1_path, const char *imagem2_path, const char *diferenca_path) {
+//Diferença logarítmica
+static int comparar_imagens_diferenca_log(const char *imagem1_path, const char *imagem2_path, const char *diferenca_path) {
+    double g_metrica_calculada;
     int w1, h1, channels1;
     unsigned char *img1_data = stbi_load(imagem1_path, &w1, &h1, &channels1, 1);
     if (!img1_data) {
@@ -31,43 +33,123 @@ static int comparar_imagens_diferenca(const char *imagem1_path, const char *imag
         return -1;
     }
 
-    unsigned char *diff_img_data = (unsigned char *)malloc(w1 * h1 * sizeof(unsigned char));
-    if (!diff_img_data) {
-        fprintf(stderr, "Erro ao alocar memória para a imagem de diferença.\n");
+    unsigned char *diff_img_data_visual = (unsigned char *)malloc(w1 * h1 * sizeof(unsigned char));
+    if (!diff_img_data_visual) {
+        fprintf(stderr, "Erro ao alocar memória para a imagem de diferença visual.\n");
         stbi_image_free(img1_data);
         stbi_image_free(img2_data);
         return -1;
     }
 
-    const double log_de_256 = log1p(255.0); 
+    const double log_de_256 = log1p(255.0);
+    double soma_modulos_para_metrica = 0.0;
 
     for (int i = 0; i < w1 * h1; ++i) {
         int diferenca_original = (int)img1_data[i] - (int)img2_data[i];
         int diferenca_absoluta = abs(diferenca_original); 
 
-        double valor_final_pixel = (log1p((double)diferenca_absoluta) / log_de_256) * 255.0;
+        soma_modulos_para_metrica += diferenca_absoluta;
+
+        double valor_pixel_visual = (log1p((double)diferenca_absoluta) / log_de_256) * 255.0;
         
-        if (valor_final_pixel < 0.0) valor_final_pixel = 0.0;
-        if (valor_final_pixel > 255.0) valor_final_pixel = 255.0;
+        if (valor_pixel_visual < 0.0) valor_pixel_visual = 0.0;
+        if (valor_pixel_visual > 255.0) valor_pixel_visual = 255.0;
         
-        diff_img_data[i] = (unsigned char)(valor_final_pixel + 0.5); 
+        diff_img_data_visual[i] = (unsigned char)(valor_pixel_visual + 0.5); 
     }
 
-    if (!stbi_write_png(diferenca_path, w1, h1, 1, diff_img_data, w1)) {
-        fprintf(stderr, "Erro ao salvar a imagem de diferença '%s'\n", diferenca_path);
+    g_metrica_calculada = ((soma_modulos_para_metrica * 100.0) / 255.0)/(h1*w1);
+    printf("--------------------------------------------------------------------\n");
+    printf("DIFERENÇA: %.2f%%\n", g_metrica_calculada);
+    printf("--------------------------------------------------------------------\n");
+
+    if (!stbi_write_png(diferenca_path, w1, h1, 1, diff_img_data_visual, w1)) {
+        fprintf(stderr, "Erro ao salvar a imagem de diferença visual '%s'\n", diferenca_path);
         stbi_image_free(img1_data);
         stbi_image_free(img2_data);
-        free(diff_img_data);
+        free(diff_img_data_visual);
         return -1;
     }
 
-    printf("Imagem de diferença (abs(A-B) com escala logarítmica) salva como '%s'\n", diferenca_path);
-    printf("  Nesta imagem: Preto (0) = sem diferença.\n");
-    printf("              Outros tons = diferença presente, com realce para pequenas diferenças.\n");
-
+    printf("Imagem de diferença visual logarítmica salva como '%s'\n", diferenca_path);
+    
     stbi_image_free(img1_data);
     stbi_image_free(img2_data);
-    free(diff_img_data);
+    free(diff_img_data_visual);
+
+    return 0;
+}
+
+//Diferença normal
+static int comparar_imagens_diferenca_normal(const char *imagem1_path, const char *imagem2_path, const char *diferenca_path) {
+    double g_metrica_calculada; 
+
+    int w1, h1, channels1;
+    unsigned char *img1_data = stbi_load(imagem1_path, &w1, &h1, &channels1, 1);
+    if (!img1_data) {
+        fprintf(stderr, "Erro ao carregar imagem '%s'\n", imagem1_path);
+        return -1;
+    }
+
+    int w2, h2, channels2;
+    unsigned char *img2_data = stbi_load(imagem2_path, &w2, &h2, &channels2, 1);
+    if (!img2_data) {
+        fprintf(stderr, "Erro ao carregar imagem '%s'\n", imagem2_path);
+        stbi_image_free(img1_data);
+        return -1;
+    }
+
+    if (w1 != w2 || h1 != h2) {
+        fprintf(stderr, "As imagens têm dimensões diferentes: Imagem1 (%dx%d) vs Imagem2 (%dx%d)\n", w1, h1, w2, h2);
+        stbi_image_free(img1_data);
+        stbi_image_free(img2_data);
+        return -1;
+    }
+
+    unsigned char *diff_img_data_visual = (unsigned char *)malloc(w1 * h1 * sizeof(unsigned char));
+    if (!diff_img_data_visual) {
+        fprintf(stderr, "Erro ao alocar memória para a imagem de diferença visual.\n");
+        stbi_image_free(img1_data);
+        stbi_image_free(img2_data);
+        return -1;
+    }
+
+    double soma_modulos_para_metrica = 0.0;
+
+    for (int i = 0; i < w1 * h1; ++i) {
+        int diferenca_original = (int)img1_data[i] - (int)img2_data[i];
+        int diferenca_absoluta = abs(diferenca_original); 
+
+        soma_modulos_para_metrica += diferenca_absoluta;
+
+        diff_img_data_visual[i] = (unsigned char)diferenca_absoluta; 
+    }
+
+    long total_pixels = (long)h1 * w1;
+    if (total_pixels > 0) {
+        double mae = soma_modulos_para_metrica / (double)total_pixels;
+        g_metrica_calculada = (mae / 255.0) * 100.0;
+    } else {
+        g_metrica_calculada = 0.0; 
+    }
+    
+    printf("--------------------------------------------------------------------\n");
+    printf("DIFERENÇA PERCENTUAL MÉDIA: %.2f%%\n", g_metrica_calculada);
+    printf("--------------------------------------------------------------------\n");
+
+    if (!stbi_write_png(diferenca_path, w1, h1, 1, diff_img_data_visual, w1)) {
+        fprintf(stderr, "Erro ao salvar a imagem de diferença visual '%s'\n", diferenca_path);
+        stbi_image_free(img1_data);
+        stbi_image_free(img2_data);
+        free(diff_img_data_visual);
+        return -1;
+    }
+
+    printf("Imagem de diferença visual absoluta salva como '%s'\n", diferenca_path);
+    
+    stbi_image_free(img1_data);
+    stbi_image_free(img2_data);
+    free(diff_img_data_visual);
 
     return 0; 
 }
@@ -117,7 +199,7 @@ int sobel(int m[3][5]){
     int sumX = 0, sumY = 0;
 
     for (int i = 0; i < 3; i++){
-        for (int j = 0; j < 3; j++){ // Loops iteram 3x3
+        for (int j = 0; j < 3; j++){ 
             sumX = sumX + mask0[i][j] * m[i][j];
             sumY = sumY + mask1[i][j] * m[i][j]; 
         }
@@ -285,11 +367,11 @@ int funcTeste2x2(unsigned char *dados, int i, int j, int larg_dados, int tamanho
 
 int calcularGeratriz(unsigned char *dados, int i, int j, int larg_dados, int tamanho, int operacao){
     if(operacao == 2 || operacao == 3){
-        return funcTeste3x3(dados, i, j, larg_dados, tamanho, operacao); 
+        funcTeste3x3(dados, i, j, larg_dados, tamanho, operacao); 
     }else if(operacao == 4 || operacao == 5){
-        return funcTeste5x5(dados, i, j, larg_dados, tamanho, operacao); 
+        funcTeste5x5(dados, i, j, larg_dados, tamanho, operacao); 
     }else{
-        return funcTeste2x2(dados, i, j, larg_dados, tamanho); 
+        funcTeste2x2(dados, i, j, larg_dados, tamanho); 
     }
 }
 
@@ -298,7 +380,7 @@ int main() {
     const char *input_filename = "lenna.jpeg";
     char *output_filename = "foto.png"; 
 
-    int width, height, channels;
+    int width, height, channels, comparar;
     unsigned char *data = stbi_load(input_filename, &width, &height, &channels, 1);
     if (!data) {
         printf("Erro ao carregar imagem '%s'\n", input_filename);
@@ -316,15 +398,17 @@ int main() {
         return 1;
     }
 
-    printf("\n%d %d", width, height);
+    printf("Dimensões: %d %d", width, height);
     double max_value = 0.0; 
     int operacao = 0;
     int comp = 0;
-    printf("\nDIGITE O FILTRO DESEJADO: ");
+    printf("\n\nDIGITE O FILTRO/OPÇÃO DESEJADA ");
     printf("\nFILTROS:\n[1] Roberts(2x2) \n[2] Sobel(3x3) \n[3] Prewitt(3x3) \n[4] Sobel Expandido(5x5) \n[5] Laplaciano(5x5): \n[6] CompararC-FPGA: \n[7] Sair: ");
     scanf("%d", &operacao);
 
-    switch(operacao){
+    while (operacao > 0 && operacao < 7){
+
+        switch(operacao){
             case 1:
                 output_filename = "outputC/roberts.png";
                 break;
@@ -354,13 +438,12 @@ int main() {
                 printf("[5] Laplaciano\n");
                 printf("Digite o número do filtro para comparar: ");
 
-                if (scanf("%d", &filter_choice_for_comparison) != 1) {
-                    printf("Entrada inválida. Por favor, digite um número.\n");
-                    while (getchar() != '\n'); 
-                    break; 
-                }
+                scanf("%d", &filter_choice_for_comparison);
+                printf("Digite qual tipo de diferença deseja ver [0]Log [1]Normal: ");
+                scanf("%d", &comparar);
 
                 char base_filename[64];
+                char tipoo[64];
                 int valid_choice = 1;
 
                 switch (filter_choice_for_comparison) {
@@ -376,22 +459,32 @@ int main() {
                 }
 
                 if (valid_choice) {
+                    if(comparar == 0){
+                        strcpy(tipoo, "Log");
+                    }else{
+                        strcpy(tipoo, "Normal");
+                    }
                     char path_image_c[128];
                     char path_image_fpga[128];
                     char path_image_difference[128];
 
                     sprintf(path_image_c, "outputC/%s.png", base_filename);
                     sprintf(path_image_fpga, "outputDafema/%s.png", base_filename);
-                    sprintf(path_image_difference, "outputDif/%s_diff.png", base_filename); 
+                    sprintf(path_image_difference, "outputDif%s/%s_diff.png", tipoo, base_filename); 
 
                     printf("\nComparando:\n  Imagem C:     %s\n  Imagem FPGA:  %s\n", path_image_c, path_image_fpga);
                     printf("  Salvando diferença em: %s\n", path_image_difference);
 
-                    if (comparar_imagens_diferenca(path_image_c, path_image_fpga, path_image_difference) == 0) {
-
-                        printf("A diferença das duas imagens é de: %d", porc_dif);
-                    } else {
-                        printf("Falha ao comparar imagens. Verifique os caminhos e se as imagens existem com as mesmas dimensões.\n");
+                    if(comparar == 0){
+                        if (comparar_imagens_diferenca_log(path_image_c, path_image_fpga, path_image_difference) == 0) {
+                        } else {
+                            printf("Falha ao comparar imagens. Verifique os caminhos e se as imagens existem com as mesmas dimensões.\n");
+                        }
+                    }else{
+                        if (comparar_imagens_diferenca_normal(path_image_c, path_image_fpga, path_image_difference) == 0) {
+                        } else {
+                            printf("Falha ao comparar imagens. Verifique os caminhos e se as imagens existem com as mesmas dimensões.\n");
+                        }
                     }
                 }
                 break; 
@@ -399,26 +492,24 @@ int main() {
             default: 
                 break;
     }
-
-    while (operacao > 0 && operacao < 6){
-        for (int y = 0; y < height - 1; y++) { 
-            for (int x = 0; x < width - 1; x++) { 
-                int temporario = calcularGeratriz(data, y, x, width, height, operacao);
-                if (temporario>255){
-                    temporario=255;
-                }else if (temporario<0){
-                    temporario=0;
-                }
-                output_data[y * width + x] = temporario;
-                
+        if(operacao > 0 && operacao < 6){
+            for (int y = 0; y < height - 1; y++) { 
+                for (int x = 0; x < width - 1; x++) { 
+                    int temporario = calcularGeratriz(data, y, x, width, height, operacao);
+                    if (temporario>255){
+                        temporario=255;
+                    }else if (temporario<0){
+                        temporario=0;
+                    }
+                    output_data[y * width + x] = temporario;
             }
         }
-        
         stbi_write_png(output_filename, width, height, 1, output_data, width);
         printf("Imagem salva como '%s'\n", output_filename);
+        }
 
-        printf("\nDIGITE O FILTRO DESEJADO ");
-        printf("\nFILTROS:\n[1] Roberts(2x2) \n[2] Sobel(3x3) \n[3] Prewitt(3x3) \n[4] Sobel Expandido(5x5) \n[5] Laplaciano(5x5): \n[6] Sair do Programa: ");
+        printf("\nDIGITE O FILTRO/OPÇÃO DESEJADA ");
+        printf("\nFILTROS:\n[1] Roberts(2x2) \n[2] Sobel(3x3) \n[3] Prewitt(3x3) \n[4] Sobel Expandido(5x5) \n[5] Laplaciano(5x5): \n[6] CompararC-FPGA: \n[7] Sair:  ");
         scanf("%d", &operacao); 
     }
 
