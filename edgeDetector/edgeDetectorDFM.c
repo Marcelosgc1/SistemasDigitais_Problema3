@@ -87,14 +87,18 @@ void laplaciano(){
 }
 
 
-int geratriz5x5(unsigned char *dados, int i, int j, int largura, int altura, int operacao, int somaFpga) {
+int geratriz5x5(unsigned char *dados, int i, int j, int largura, int tamanho, int operacao, int somaFpga) {
 
     int matriz_temp[5][5];
     int linha = 0, coluna = 0, resultado;
+    tamanho--;
 
-    for(int linhaTemp = i - 2; linhaTemp < (i + 3); linhaTemp++){
-        for(int colunaTemp = j - 2; colunaTemp < (j + 3); colunaTemp++){
-            matriz_temp[linha][coluna] = dados[linhaTemp* largura + colunaTemp];
+    for(int w = i - 2; w < (i + 3); w++){
+        for(int z = j - 2; z < (j + 3); z++){
+            if ((w < 0 || w > tamanho) && (z < 0 || z > tamanho)) matriz_temp[linha][coluna] = dados[i*largura + j];
+            else if (w < 0 || w > tamanho) matriz_temp[linha][coluna] = dados[i*largura + z];
+            else if (z < 0 || z > tamanho) matriz_temp[linha][coluna] = dados[w*largura + j];
+            else matriz_temp[linha][coluna] = dados[w*largura + z];
             coluna++;
         }
         coluna = 0;
@@ -120,14 +124,13 @@ int geratriz3x3(unsigned char *dados, int i, int j, int larg_dados, int tamanho,
 
     int matriz_temp[3][5];
     int linha = 0, coluna = 0, resultado;
+    tamanho--;
 
     for (int w = i - 1; w < (i + 2); w++){
         for (int z = j - 1; z < (j + 2); z++){
             if ((w < 0 || w > tamanho) && (z < 0 || z > tamanho)) matriz_temp[linha][coluna] = dados[i*larg_dados + j];
-            else if (w < 0) matriz_temp[linha][coluna] = dados[(w+1)*larg_dados + z];
-            else if (w > tamanho) matriz_temp[linha][coluna] = dados[(w-1)*larg_dados + z];
-            else if (z < 0) matriz_temp[linha][coluna] = dados[w*larg_dados + z + 1];
-            else if (z > tamanho) matriz_temp[linha][coluna] = dados[w*larg_dados + z - 1];
+            else if (w < 0 || w > tamanho) matriz_temp[linha][coluna] = dados[i*larg_dados + z];
+            else if (z < 0 || z > tamanho) matriz_temp[linha][coluna] = dados[w*larg_dados + j];
             else matriz_temp[linha][coluna] = dados[w*larg_dados + z];
             coluna++;
         }
@@ -145,12 +148,15 @@ int geratriz3x3(unsigned char *dados, int i, int j, int larg_dados, int tamanho,
 int geratriz2x2(unsigned char *dados, int i, int j, int larg_dados, int tamanho, int somaFpga){
 
     int matriz_temp[2][5];    
-    
     int linha = 0, coluna = 0, resultado;
+    tamanho--;
 
     for (int w = i; w < (i + 2); w++){
         for (int z = j; z < (j + 2); z++){
-            matriz_temp[linha][coluna] = dados[w*larg_dados + z];
+            if      (w>tamanho && z>tamanho) matriz_temp[linha][coluna] = dados[i*larg_dados + j];
+            else if (w>tamanho) matriz_temp[linha][coluna] = dados[i*larg_dados + z];
+            else if (z>tamanho) matriz_temp[linha][coluna] = dados[w*larg_dados + j];
+            else                matriz_temp[linha][coluna] = dados[w*larg_dados + z];
             coluna++;
         }
         coluna = 0;
@@ -178,7 +184,7 @@ int calcularGeratriz(unsigned char *dados, int i, int j, int larg_dados, int tam
 
 
 int main() {
-    const char *inputImagem = "data/Lena.jpeg";
+    const char *inputImagem = "data/clock.png";
     char *outputImagem = "foto.png";
     int larguraImg, alturaImg, channels, operacao, somaFpga = 0;
     unsigned char *dadosImagem = stbi_load(inputImagem, &larguraImg, &alturaImg, &channels, 1);
@@ -215,23 +221,23 @@ int main() {
         switch(operacao){
             case 1:
                 roberts();
-                outputImagem = "outputDFM/roberts.png";
+                outputImagem = "outputDFM/roberts_";
                 break;
             case 2:
                 sobel();
-                outputImagem = "outputDFM/sobel.png";
+                outputImagem = "outputDFM/sobel_";
                 break;
             case 3:
                 prewitt();
-                outputImagem = "outputDFM/prewit.png";
+                outputImagem = "outputDFM/prewit_";
                 break;
             case 4:
                 sobel_expandido();
-                outputImagem = "outputDFM/sobel_expandido.png";
+                outputImagem = "outputDFM/sobel_expandido_";
                 break;
             case 5:
                 laplaciano();
-                outputImagem = "outputDFM/laplaciano.png";
+                outputImagem = "outputDFM/laplaciano_";
                 break;
             default:
                 break;
@@ -254,8 +260,9 @@ int main() {
         double tempo = (fimProcedimento - comecoProcedimento) / CLOCKS_PER_SEC;
         printf("\nEste procedimento durou: %.6f segundos\n", tempo);
     
-
-        
+    
+        char *nomeImagem = inputImagem + 4;
+        strcat(outputImagem, nomeImagem);
         stbi_write_png(outputImagem, larguraImg, alturaImg, 1, novaImagem, larguraImg);
         printf("Imagem salva como '%s'\n", outputImagem);
 
