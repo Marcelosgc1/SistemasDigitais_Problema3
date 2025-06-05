@@ -184,23 +184,27 @@ void subtracao();
 
 /* Realiza convolução da matriz A, usando matriz B como kernel 
  * É usada a matriz B rotacionada 45 graus (2x2) como segundo kernel 
+ * linha e coluna indicam posição da geratriz calculada da imagem
+ * importantes para utilização do VGA p/ exibição da borda detectada.
  *
  * O resultado é escrito na matriz C (2)
  * Resultado da 1ª convolução:      [0][0]
  * Resultado da 2ª convolução:      [0][1]
  * Resultado da soma de resultados: [0][2]
  */
-void convolucaoRoberts();
+void convolucaoRoberts(int linha, int coluna);
 
 /* Realiza convolução da matriz A, usando matriz B como kernel 
  * É usada a matriz B transposta como segundo kernel 
+ * linha e coluna indicam posição da geratriz calculada da imagem
+ * importantes para utilização do VGA p/ exibição da borda detectada.
  *
  * O resultado é escrito na matriz C (2)
  * Resultado da 1ª convolução:      [0][0]
  * Resultado da 2ª convolução:      [0][1]
  * Resultado da soma de resultados: [0][2]
  */
-void convolucaoParalela();
+void convolucaoParalela(int linha, int coluna);
 
 /* Calcula de determinante da matriz A 2x2  
  * 

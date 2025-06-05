@@ -482,48 +482,49 @@ convolucao:
         STR LR, [SP, #0]
 
         @-----Opcode da instrução-----
-        LSL R1, #13
-        LSL R0, #4
+        LSL R1, R1, #13
+        LSL R0, R0, #4
         ORR R0, R1, R0
         ORR R0, R0, #5
 
         BL write_instruction
         
-        LDR R0, [SP, #0]
-        LDR LR, [SP, #4]
-        ADD SP, SP, #8
+        LDR LR, [SP, #0]
+        ADD SP, SP, #4
 
         BX LR
 
 convolucaoParalela:
-        SUB SP, SP, #8
-        STR R0, [SP, #0]
-        STR LR, [SP, #4]
+        SUB SP, SP, #4
+        STR LR, [SP, #0]
 
         @-----Opcode da instrução-----
-        MOV R0, #6
+        LSL R1, R1, #13
+        LSL R0, R0, #4
+        ORR R0, R1, R0
+        ORR R0, R0, #6
 
         BL write_instruction
         
-        LDR R0, [SP, #0]
-        LDR LR, [SP, #4]
-        ADD SP, SP, #8
+        LDR LR, [SP, #0]
+        ADD SP, SP, #4
 
         BX LR
 
 convolucaoRoberts:
-        SUB SP, SP, #8
-        STR R0, [SP, #0]
-        STR LR, [SP, #4]
+        SUB SP, SP, #4
+        STR LR, [SP, #0]
 
         @-----Opcode da instrução-----
-        MOV R0, #7
+        LSL R1, R1, #13
+        LSL R0, R0, #4
+        ORR R0, R1, R0
+        ORR R0, R0, #7
 
         BL write_instruction
         
-        LDR R0, [SP, #0]
-        LDR LR, [SP, #4]
-        ADD SP, SP, #8
+        LDR LR, [SP, #0]
+        ADD SP, SP, #4
 
         BX LR
 
@@ -622,7 +623,11 @@ renderizar:
         LDR R1, [R1, #0]
         STR R0, [R1, #0]
 
-
+        LDR R0, [SP, #0]
+        LDR R1, [SP, #4]
+        LDR LR, [SP, #8]
+        ADD SP, SP, #12
+        
         BX LR
 
 write_instruction:
