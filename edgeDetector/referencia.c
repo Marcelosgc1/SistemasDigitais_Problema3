@@ -1,83 +1,180 @@
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 
+#define SSIM_CALC_SUCCESS 0
+#define SSIM_ERROR_LOAD_IMG1 -1
+#define SSIM_ERROR_LOAD_IMG2 -2
+#define SSIM_ERROR_DIMENSIONS_MISMATCH -3
+#define SSIM_ERROR_ZERO_PIXELS -4
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
-#include "lib/stb_image.h"
-#include "lib/stb_image_write.h"
+#include "stb_image.h"
+#include "stb_image_write.h"
 
-//Diferença logarítmica
-static int comparar_imagens_diferenca_log(const char *imagem1_path, const char *imagem2_path, const char *diferenca_path) {
-    double g_metrica_calculada;
-    int w1, h1, channels1;
-    unsigned char *img1_data = stbi_load(imagem1_path, &w1, &h1, &channels1, 1);
-    if (!img1_data) {
-        fprintf(stderr, "Erro ao carregar imagem '%s'\n", imagem1_path);
-        return -1;
+static double calcular_ssim_global(const char *caminho_img1, const char *caminho_img2, int *status_code) {
+    int largura1, altura1, canais1;
+    unsigned char *pixels_img1 = stbi_load(caminho_img1, &largura1, &altura1, &canais1, 1); 
+    if (!pixels_img1) {
+        if (status_code) *status_code = SSIM_ERROR_LOAD_IMG1;
+        fprintf(stderr, "Erro ao carregar imagem 1: %s\n", caminho_img1);
+        return -2.0; // Valor de erro distinto do range normal do SSIM (-1 a 1)
     }
 
-    int w2, h2, channels2;
-    unsigned char *img2_data = stbi_load(imagem2_path, &w2, &h2, &channels2, 1);
-    if (!img2_data) {
-        fprintf(stderr, "Erro ao carregar imagem '%s'\n", imagem2_path);
-        stbi_image_free(img1_data);
-        return -1;
+    int largura2, altura2, canais2;
+    unsigned char *pixels_img2 = stbi_load(caminho_img2, &largura2, &altura2, &canais2, 1); 
+    if (!pixels_img2) {
+        stbi_image_free(pixels_img1);
+        if (status_code) *status_code = SSIM_ERROR_LOAD_IMG2;
+        fprintf(stderr, "Erro ao carregar imagem 2: %s\n", caminho_img2);
+        return -2.0;
     }
 
-    if (w1 != w2 || h1 != h2) {
-        fprintf(stderr, "As imagens têm dimensões diferentes: Imagem1 (%dx%d) vs Imagem2 (%dx%d)\n", w1, h1, w2, h2);
-        stbi_image_free(img1_data);
-        stbi_image_free(img2_data);
-        return -1;
+    if (largura1 != largura2 || altura1 != altura2) {
+        stbi_image_free(pixels_img1);
+        stbi_image_free(pixels_img2);
+        if (status_code) *status_code = SSIM_ERROR_DIMENSIONS_MISMATCH;
+        fprintf(stderr, "Erro: As dimensões das imagens não coincidem (%dx%d vs %dx%d).\n", largura1, altura1, largura2, altura2);
+        return -2.0;
     }
 
-    unsigned char *diff_img_data_visual = (unsigned char *)malloc(w1 * h1 * sizeof(unsigned char));
-    if (!diff_img_data_visual) {
-        fprintf(stderr, "Erro ao alocar memória para a imagem de diferença visual.\n");
-        stbi_image_free(img1_data);
-        stbi_image_free(img2_data);
-        return -1;
+    int largura = largura1;
+    int altura = altura1;
+    long total_pixels = (long)largura * altura;
+
+    if (total_pixels == 0) {
+        stbi_image_free(pixels_img1);
+        stbi_image_free(pixels_img2);
+        if (status_code) *status_code = SSIM_ERROR_ZERO_PIXELS;
+        fprintf(stderr, "Erro: Imagem com zero pixels.\n");
+        return -2.0;
     }
 
-    const double log_de_256 = log1p(255.0);
-    double soma_modulos_para_metrica = 0.0;
+    double soma_x = 0.0, soma_y = 0.0;
+    double soma_x_quadrado = 0.0, soma_y_quadrado = 0.0;
+    double soma_xy = 0.0;
 
-    for (int i = 0; i < w1 * h1; ++i) {
-        int diferenca_original = (int)img1_data[i] - (int)img2_data[i];
-        int diferenca_absoluta = abs(diferenca_original); 
+    for (int i = 0; i < total_pixels; ++i) {
+        double pixel_x = (double)pixels_img1[i];
+        double pixel_y = (double)pixels_img2[i];
 
-        soma_modulos_para_metrica += diferenca_absoluta;
-
-        double valor_pixel_visual = (log1p((double)diferenca_absoluta) / log_de_256) * 255.0;
-        
-        if (valor_pixel_visual < 0.0) valor_pixel_visual = 0.0;
-        if (valor_pixel_visual > 255.0) valor_pixel_visual = 255.0;
-        
-        diff_img_data_visual[i] = (unsigned char)(valor_pixel_visual + 0.5); 
+        soma_x += pixel_x;
+        soma_y += pixel_y;
+        soma_x_quadrado += pixel_x * pixel_x;
+        soma_y_quadrado += pixel_y * pixel_y;
+        soma_xy += pixel_x * pixel_y;
     }
 
-    g_metrica_calculada = ((soma_modulos_para_metrica * 100.0) / 255.0)/(h1*w1);
-    printf("--------------------------------------------------------------------\n");
-    printf("DIFERENÇA: %.2f%%\n", g_metrica_calculada);
-    printf("--------------------------------------------------------------------\n");
+    double mu_x = soma_x / total_pixels;
+    double mu_y = soma_y / total_pixels;
 
-    if (!stbi_write_png(diferenca_path, w1, h1, 1, diff_img_data_visual, w1)) {
-        fprintf(stderr, "Erro ao salvar a imagem de diferença visual '%s'\n", diferenca_path);
-        stbi_image_free(img1_data);
-        stbi_image_free(img2_data);
-        free(diff_img_data_visual);
-        return -1;
+    double sigma_x_sq = (soma_x_quadrado / total_pixels) - (mu_x * mu_x);
+    double sigma_y_sq = (soma_y_quadrado / total_pixels) - (mu_y * mu_y);
+
+    double sigma_xy = (soma_xy / total_pixels) - (mu_x * mu_y);
+
+    const double L_range_dinamico = 255.0; // Para imagens de 8 bits
+    const double K1 = 0.01;
+    const double K2 = 0.03;
+    const double C1 = (K1 * L_range_dinamico) * (K1 * L_range_dinamico);
+    const double C2 = (K2 * L_range_dinamico) * (K2 * L_range_dinamico);
+
+    // Fórmula do SSIM (Equação 13 do artigo)
+    // SSIM(x,y) = ((2*μx*μy + C1) * (2*σxy + C2)) / ((μx^2 + μy^2 + C1) * (σx^2 + σy^2 + C2))
+    double numerador   = (2 * mu_x * mu_y + C1) * (2 * sigma_xy + C2);
+    double denominador = (mu_x * mu_x + mu_y * mu_y + C1) * (sigma_x_sq + sigma_y_sq + C2);
+
+    double ssim_valor;
+    if (denominador == 0) {
+       
+        if (numerador == 0 && denominador == 0) { // Acontece se mu_x,mu_y,sigma_x_sq,sigma_y_sq,sigma_xy forem todos zero (imagem toda preta)
+             ssim_valor = 1.0; // Duas imagens totalmente pretas são idênticas
+        } else if (denominador == 0 && numerador != 0) { // Situação instável
+             ssim_valor = 0.0; // Ou algum outro valor indicando instabilidade
+        } else { // Denominador muito próximo de zero mas não exatamente zero, numerador também.
+             ssim_valor = 1.0; // Caso de imagens constantes idênticas pode levar aqui.
+        }
+         
+         if (denominador < 1e-10 && numerador < 1e-10) { // Evitar divisão por "quase zero"
+            ssim_valor = 1.0; // Provavelmente imagens constantes idênticas
+         } else if (denominador < 1e-10) {
+            ssim_valor = 0.0; // Instável, sem similaridade clara
+         } else {
+             ssim_valor = numerador / denominador;
+         }
+
+    } else {
+        ssim_valor = numerador / denominador;
     }
-
-    printf("Imagem de diferença visual logarítmica salva como '%s'\n", diferenca_path);
     
-    stbi_image_free(img1_data);
-    stbi_image_free(img2_data);
-    free(diff_img_data_visual);
+    stbi_image_free(pixels_img1);
+    stbi_image_free(pixels_img2);
 
-    return 0;
+    if (status_code) *status_code = SSIM_CALC_SUCCESS;
+    return ssim_valor;
+}
+
+//Diferença Log
+static int gerar_imagem_diferenca_log(const char *caminho_img1, const char *caminho_img2, const char *caminho_img_saida) {
+    int largura1, altura1, canais1;
+    unsigned char *pixels_img1 = stbi_load(caminho_img1, &largura1, &altura1, &canais1, 1);
+    if (!pixels_img1) {
+        return -1; 
+    }
+
+    int largura2, altura2, canais2;
+    unsigned char *pixels_img2 = stbi_load(caminho_img2, &largura2, &altura2, &canais2, 1);
+    if (!pixels_img2) {
+        stbi_image_free(pixels_img1);
+        return -1;
+    }
+
+    if (largura1 != largura2 || altura1 != altura2) {
+        stbi_image_free(pixels_img1);
+        stbi_image_free(pixels_img2);
+        return -1; 
+    }
+
+    int largura = largura1;
+    int altura = altura1;
+    long total_pixels = (long)largura * altura;
+
+    unsigned char *pixels_img_diferenca = (unsigned char *)malloc(total_pixels * sizeof(unsigned char));
+    if (!pixels_img_diferenca) {
+        stbi_image_free(pixels_img1);
+        stbi_image_free(pixels_img2);
+        return -1; 
+    }
+
+    // Constante para a escala logarítmica: log(1 + valor_max_abs_diff_possivel)
+    // O valor máximo da diferença absoluta entre pixels de 8 bits (0-255) é 255.
+    const double log_do_max_abs_diff_mais_1 = log1p(255.0); // log(1 + 255) = log(256)
+
+    for (int i = 0; i < total_pixels; ++i) {
+        int diff_original = (int)pixels_img1[i] - (int)pixels_img2[i];
+        int diff_abs = abs(diff_original); // Módulo da diferença, valor entre 0 e 255
+
+        // Aplica a escala logarítmica para o pixel da imagem de saída
+        // A fórmula é: (log(1 + diff_abs) / log(1 + max_abs_diff_possivel)) * 255
+        // Se diff_abs é 0, log1p(0) é 0, então o pixel_final será 0.
+        double pixel_final_log = (log1p((double)diff_abs) / log_do_max_abs_diff_mais_1) * 255.0;
+        
+        if (pixel_final_log < 0.0) pixel_final_log = 0.0;
+        if (pixel_final_log > 255.0) pixel_final_log = 255.0;
+        
+        pixels_img_diferenca[i] = (unsigned char)(pixel_final_log + 0.5); // Adiciona 0.5 para arredondamento
+    }
+
+    int sucesso_ao_salvar = stbi_write_png(caminho_img_saida, largura, altura, 1, pixels_img_diferenca, largura);
+    printf("Imagem de diferença logarítmica gerada: %s\n", caminho_img_saida);
+
+    stbi_image_free(pixels_img1);
+    stbi_image_free(pixels_img2);
+    free(pixels_img_diferenca);
+
+    return sucesso_ao_salvar ? 0 : -1;
 }
 
 //Diferença normal
@@ -377,10 +474,10 @@ int calcularGeratriz(unsigned char *dados, int i, int j, int larg_dados, int tam
 
 
 int main() {
-    const char *input_filename = "data/Lena.jpeg";
+    const char *input_filename = "lenna.jpeg";
     char *output_filename = "foto.png"; 
 
-    int width, height, channels, comparar;
+    int width, height, channels, comparar, status;
     unsigned char *data = stbi_load(input_filename, &width, &height, &channels, 1);
     if (!data) {
         printf("Erro ao carregar imagem '%s'\n", input_filename);
@@ -476,7 +573,10 @@ int main() {
                     printf("  Salvando diferença em: %s\n", path_image_difference);
 
                     if(comparar == 0){
-                        if (comparar_imagens_diferenca_log(path_image_c, path_image_fpga, path_image_difference) == 0) {
+                        if (gerar_imagem_diferenca_log(path_image_c, path_image_fpga, path_image_difference) == 0) {
+                            double ssim = calcular_ssim_global(path_image_c, path_image_fpga, &status);
+                            double dssim_percent = ((1.0 - ssim) / 2.0) * 100.0;
+                            printf("DSSIM Percentual (Dissimilaridade Estrutural): %.2f%%\n", dssim_percent);
                         } else {
                             printf("Falha ao comparar imagens. Verifique os caminhos e se as imagens existem com as mesmas dimensões.\n");
                         }
