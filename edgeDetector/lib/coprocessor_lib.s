@@ -47,6 +47,9 @@
 .global determinante5x5
 .type determinante5x5, %function
 
+.global renderizar
+.type renderizar, %function
+
 .global write_instruction
 
 iniciarDafema:
@@ -475,12 +478,14 @@ subtracao:
         BX LR
 
 convolucao:
-        SUB SP, SP, #8
-        STR R0, [SP, #0]
-        STR LR, [SP, #4]
+        SUB SP, SP, #4
+        STR LR, [SP, #0]
 
         @-----Opcode da instrução-----
-        MOV R0, #5
+        LSL R1, #13
+        LSL R0, #4
+        ORR R0, R1, R0
+        ORR R0, R0, #5
 
         BL write_instruction
         
@@ -600,6 +605,23 @@ determinante5x5:
         LDR R0, [SP, #0]
         LDR LR, [SP, #4]
         ADD SP, SP, #8
+
+        BX LR
+
+renderizar:
+        SUB SP, SP, #12
+        STR R0, [SP, #0]
+        STR R1, [SP, #4]
+        STR LR, [SP, #8]
+
+        @-----Monta instrucao----
+        MOV R0, #15
+
+        @-----Carrega endereço virtual mapeado e escreve instrução-----
+        LDR R1, =FPGA_ADRS
+        LDR R1, [R1, #0]
+        STR R0, [R1, #0]
+
 
         BX LR
 

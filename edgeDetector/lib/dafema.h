@@ -162,11 +162,13 @@ signed char lerIndice(unsigned char matrizId, unsigned char linha, unsigned char
 void multiEscalar(char multi);
 
 /* Realiza convolução da matriz A, usando matriz B como kernel 
- *
+ * linha e coluna indicam posição da geratriz calculada da imagem
+ * importantes para utilização do VGA p/ exibição da borda detectada.
+ * 
  * O resultado é escrito na matriz C (2)
  * Na posição [0][0]
  */
-void convolucao();
+void convolucao(int linha, int coluna);
 
 /* Soma matrizes A e B  
  * 

@@ -109,7 +109,7 @@ int geratriz5x5(unsigned char *dados, int i, int j, int largura, int altura, int
 	    return resultado;
 
     }else{
-        convolucao();
+        convolucao(i, j);
         resultado = ler(2,0,0);
         return resultado&255;
     }
