@@ -11,8 +11,8 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
-#include "stb_image.h"
-#include "stb_image_write.h"
+#include "lib/stb_image.h"
+#include "lib/stb_image_write.h"
 
 static double calcular_ssim_global(const char *caminho_img1, const char *caminho_img2, int *status_code) {
     int largura1, altura1, canais1;
@@ -391,14 +391,18 @@ int laplaciano(int m[5][5]){
     return sumG;
 }
 
-int funcTeste5x5(unsigned char *dados, int i, int j, int largura, int altura, int operacao) {
+int funcTeste5x5(unsigned char *dados, int i, int j, int largura, int tamanho, int operacao) {
     int matriz_temp[5][5];
     int linha = 0;
-    int coluna = 0;  
+    int coluna = 0;
+    tamanho--;
 
-    for(int linhaTemp = i - 2; linhaTemp < (i + 3); linhaTemp++){
-        for(int colunaTemp = j - 2; colunaTemp < (j + 3); colunaTemp++){
-            matriz_temp[linha][coluna] = dados[linhaTemp* largura + colunaTemp];
+    for(int w = i - 2; w < (i + 3); w++){
+        for(int z = j - 2; z < (j + 3); z++){
+            if ((w < 0 || w > tamanho) && (z < 0 || z > tamanho)) matriz_temp[linha][coluna] = dados[i*largura + j];
+            else if (w < 0 || w > tamanho) matriz_temp[linha][coluna] = dados[i*largura + z];
+            else if (z < 0 || z > tamanho) matriz_temp[linha][coluna] = dados[w*largura + j];
+            else matriz_temp[linha][coluna] = dados[w*largura + z];
             coluna++;
         }
         coluna = 0;
@@ -424,10 +428,8 @@ int funcTeste3x3(unsigned char *dados, int i, int j, int larg_dados, int tamanho
     for (int w = i - 1; w < (i + 2); w++){
         for (int z = j - 1; z < (j + 2); z++){
             if ((w < 0 || w > tamanho) && (z < 0 || z > tamanho)) matriz_temp[linha][coluna] = dados[i*larg_dados + j];
-            else if (w < 0) matriz_temp[linha][coluna] = dados[(w+1)*larg_dados + z];
-            else if (w > tamanho) matriz_temp[linha][coluna] = dados[(w-1)*larg_dados + z];
-            else if (z < 0) matriz_temp[linha][coluna] = dados[w*larg_dados + z + 1];
-            else if (z > tamanho) matriz_temp[linha][coluna] = dados[w*larg_dados + z - 1];
+            else if (w < 0 || w > tamanho) matriz_temp[linha][coluna] = dados[i*larg_dados + z];
+            else if (z < 0 || z > tamanho) matriz_temp[linha][coluna] = dados[w*larg_dados + j];
             else matriz_temp[linha][coluna] = dados[w*larg_dados + z];
             coluna++;
         }
@@ -447,12 +449,15 @@ int funcTeste3x3(unsigned char *dados, int i, int j, int larg_dados, int tamanho
 int funcTeste2x2(unsigned char *dados, int i, int j, int larg_dados, int tamanho){
 
     int matriz_temp[2][5];    
-    
+    tamanho--;
     int linha = 0, coluna = 0;
 
     for (int w = i; w < (i + 2); w++){
         for (int z = j; z < (j + 2); z++){
-            matriz_temp[linha][coluna] = dados[w*larg_dados + z];
+            if      (w>tamanho && z>tamanho) matriz_temp[linha][coluna] = dados[i*larg_dados + j];
+            else if (w>tamanho) matriz_temp[linha][coluna] = dados[i*larg_dados + z];
+            else if (z>tamanho) matriz_temp[linha][coluna] = dados[w*larg_dados + j];
+            else                matriz_temp[linha][coluna] = dados[w*larg_dados + z];
             coluna++;
         }
         coluna = 0;
@@ -474,7 +479,7 @@ int calcularGeratriz(unsigned char *dados, int i, int j, int larg_dados, int tam
 
 
 int main() {
-    const char *input_filename = "lenna.jpeg";
+    const char *input_filename = "data/clock.png";
     char *output_filename = "foto.png"; 
 
     int width, height, channels, comparar, status;
