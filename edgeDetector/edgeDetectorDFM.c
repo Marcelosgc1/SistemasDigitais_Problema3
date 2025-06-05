@@ -261,7 +261,7 @@ int main() {
         printf("\nEste procedimento durou: %.6f segundos\n", tempo);
     
     
-        char *nomeImagem = inputImagem + 4;
+        char *nomeImagem = inputImagem + 5;
         strcat(outputImagem, nomeImagem);
         stbi_write_png(outputImagem, larguraImg, alturaImg, 1, novaImagem, larguraImg);
         printf("Imagem salva como '%s'\n", outputImagem);
