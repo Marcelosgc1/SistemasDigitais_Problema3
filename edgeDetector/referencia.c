@@ -598,8 +598,8 @@ int main() {
                 break;
     }
         if(operacao > 0 && operacao < 6){
-            for (int y = 0; y < height; y++) { 
-                for (int x = 0; x < width; x++) { 
+            for (int y = 0; y < height - 1; y++) { 
+                for (int x = 0; x < width - 1; x++) { 
                     int temporario = calcularGeratriz(data, y, x, width, height, operacao);
                     if (temporario>255){
                         temporario=255;
