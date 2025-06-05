@@ -243,8 +243,8 @@ int main() {
                 break;
         }
 
-        for (int y = 0; y < alturaImg - 1; y++) {
-            for (int x = 0; x < larguraImg - 1; x++) {
+        for (int y = 0; y < alturaImg; y++) {
+            for (int x = 0; x < larguraImg; x++) {
                 int geratriz = calcularGeratriz(dadosImagem, y, x, larguraImg, alturaImg, operacao, somaFpga);
                 if (geratriz > 255){
                     geratriz = 255;
