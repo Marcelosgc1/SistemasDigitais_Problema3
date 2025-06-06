@@ -479,7 +479,7 @@ int calcularGeratriz(unsigned char *dados, int i, int j, int larg_dados, int tam
 
 
 int main() {
-    const char *input_filename = "data/clock.png";
+    const char *input_filename = "data/cameraman.png";
     char *output_filename = "foto.png"; 
 
     int width, height, channels, comparar, status;
@@ -571,7 +571,7 @@ int main() {
                     char path_image_difference[128];
 
                     sprintf(path_image_c, "outputC/%s.png", base_filename);
-                    sprintf(path_image_fpga, "outputDafema/%s.png", base_filename);
+                    sprintf(path_image_fpga, "outputDFM/%s.png", base_filename);
                     sprintf(path_image_difference, "outputDif%s/%s_diff.png", tipoo, base_filename); 
 
                     printf("\nComparando:\n  Imagem C:     %s\n  Imagem FPGA:  %s\n", path_image_c, path_image_fpga);
@@ -581,7 +581,7 @@ int main() {
                         if (gerar_imagem_diferenca_log(path_image_c, path_image_fpga, path_image_difference) == 0) {
                             double ssim = calcular_ssim_global(path_image_c, path_image_fpga, &status);
                             double dssim_percent = ((1.0 - ssim) / 2.0) * 100.0;
-                            printf("DSSIM Percentual (Dissimilaridade Estrutural): %.2f%%\n", dssim_percent);
+                            printf("DSSIM Percentual (Dissimilaridade Estrutural): %.8f%%\n", dssim_percent);
                         } else {
                             printf("Falha ao comparar imagens. Verifique os caminhos e se as imagens existem com as mesmas dimensões.\n");
                         }
