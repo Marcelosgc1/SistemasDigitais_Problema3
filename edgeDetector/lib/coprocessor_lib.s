@@ -482,8 +482,8 @@ convolucao:
         STR LR, [SP, #0]
 
         @-----Opcode da instrução-----
-        LSL R1, R1, #13
-        LSL R0, R0, #4
+        LSL R1, R1, #4
+        LSL R0, R0, #13
         ORR R0, R1, R0
         ORR R0, R0, #5
 
@@ -499,8 +499,8 @@ convolucaoParalela:
         STR LR, [SP, #0]
 
         @-----Opcode da instrução-----
-        LSL R1, R1, #13
-        LSL R0, R0, #4
+        LSL R1, R1, #4
+        LSL R0, R0, #13
         ORR R0, R1, R0
         ORR R0, R0, #6
 
@@ -516,8 +516,8 @@ convolucaoRoberts:
         STR LR, [SP, #0]
 
         @-----Opcode da instrução-----
-        LSL R1, R1, #13
-        LSL R0, R0, #4
+        LSL R1, R1, #4
+        LSL R0, R0, #13
         ORR R0, R1, R0
         ORR R0, R0, #7
 

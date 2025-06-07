@@ -184,8 +184,8 @@ int calcularGeratriz(unsigned char *dados, int i, int j, int larg_dados, int tam
 
 
 int main() {
-    const char *inputImagem = "data/clock.png";
-    char *outputImagem = "foto.png";
+    char *inputImagem = "data/mandrill.png";
+    char outputImagem[256] = "";
     int larguraImg, alturaImg, channels, operacao, somaFpga = 0;
     unsigned char *dadosImagem = stbi_load(inputImagem, &larguraImg, &alturaImg, &channels, 1);
     unsigned char *novaImagem = malloc(larguraImg * alturaImg * sizeof(char));
@@ -221,23 +221,23 @@ int main() {
         switch(operacao){
             case 1:
                 roberts();
-                outputImagem = "outputDFM/roberts_";
+                strcpy(outputImagem,"outputDFM/roberts_");
                 break;
             case 2:
                 sobel();
-                outputImagem = "outputDFM/sobel_";
+                strcpy(outputImagem,"outputDFM/sobel_");
                 break;
             case 3:
                 prewitt();
-                outputImagem = "outputDFM/prewit_";
+                strcpy(outputImagem,"outputDFM/prewit_");
                 break;
             case 4:
                 sobel_expandido();
-                outputImagem = "outputDFM/sobel_expandido_";
+                strcpy(outputImagem,"outputDFM/sobel_expandido_");
                 break;
             case 5:
                 laplaciano();
-                outputImagem = "outputDFM/laplaciano_";
+                strcpy(outputImagem, "outputDFM/laplaciano_");
                 break;
             default:
                 break;
