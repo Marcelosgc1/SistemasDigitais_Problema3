@@ -168,7 +168,7 @@ void multiEscalar(char multi);
  * O resultado é escrito na matriz C (2)
  * Na posição [0][0]
  */
-void convolucao(int linha, int coluna);
+void convolucao(int coluna, int linha);
 
 /* Soma matrizes A e B  
  * 
@@ -192,7 +192,7 @@ void subtracao();
  * Resultado da 2ª convolução:      [0][1]
  * Resultado da soma de resultados: [0][2]
  */
-void convolucaoRoberts(int linha, int coluna);
+void convolucaoRoberts(int coluna, int linha);
 
 /* Realiza convolução da matriz A, usando matriz B como kernel 
  * É usada a matriz B transposta como segundo kernel 
@@ -204,7 +204,7 @@ void convolucaoRoberts(int linha, int coluna);
  * Resultado da 2ª convolução:      [0][1]
  * Resultado da soma de resultados: [0][2]
  */
-void convolucaoParalela(int linha, int coluna);
+void convolucaoParalela(int coluna, int linha);
 
 /* Calcula de determinante da matriz A 2x2  
  * 

@@ -107,13 +107,13 @@ int geratriz5x5(unsigned char *dados, int i, int j, int largura, int tamanho, in
 
     escreverMatriz(matriz_temp, 5, 0);
     if(operacao == 4){
-        convolucaoParalela(i, j);
+        convolucaoParalela(j, i);
         resultado = ler(2,0,0);
 	    resultado = somaFpga ? ler(2,0,2) : sqrt(pow(resultado>>8, 2) + pow(resultado&255, 2));
 	    return resultado;
 
     }else{
-        convolucao(i, j);
+        convolucao(j, i);
         resultado = ler(2,0,0);
         return resultado&255;
     }
@@ -139,7 +139,7 @@ int geratriz3x3(unsigned char *dados, int i, int j, int larg_dados, int tamanho,
     }
 
     escreverMatriz(matriz_temp, 3, 0);
-    convolucaoParalela(i, j);
+    convolucaoParalela(j, i);
     resultado = ler(2,0,0);
     resultado = somaFpga ? ler(2,0,2) : sqrt(pow(resultado>>8,2) + pow(resultado&255, 2));
     return resultado;
@@ -164,7 +164,7 @@ int geratriz2x2(unsigned char *dados, int i, int j, int larg_dados, int tamanho,
     }
 
     escreverMatriz(matriz_temp, 2, 0);
-    convolucaoRoberts(i, j);
+    convolucaoRoberts(j, i);
     resultado = ler(2,0,0);
     resultado = somaFpga ? ler(2,0,2) : sqrt(pow(resultado>>8, 2) + pow(resultado&255, 2));
     return resultado;
