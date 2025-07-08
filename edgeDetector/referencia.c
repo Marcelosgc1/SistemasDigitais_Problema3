@@ -346,7 +346,7 @@ int main() {
             if (valid_choice) {
                 char path_c[128], path_fpga[128], path_diff[128];
                 sprintf(path_c, "outputC/%s.png", base_filename);
-                sprintf(path_fpga, "outputDFM/%s_clock.png", base_filename);
+                sprintf(path_fpga, "outputDFM/%s_cameraman.png", base_filename);
 
                 printf("\nComparando:\n  - Imagem C: %s\n  - Imagem FPGA: %s\n", path_c, path_fpga);
                 if (compare_type == 0) {
