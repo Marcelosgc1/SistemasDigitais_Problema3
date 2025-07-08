@@ -355,7 +355,7 @@ int main() {
                         int status;
                         double ssim = calcular_ssim_global(path_c, path_fpga, &status);
                         if (status == SSIM_CALC_SUCCESS) {
-                           printf("SSIM (Similaridade Estrutural): %.4f\n", ssim);
+                           printf("SSIM (Similaridade Estrutural): %.4f%\n ", ssim);
                         }
                     }
                 } else if (compare_type == 1) {
